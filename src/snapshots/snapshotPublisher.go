@@ -22,7 +22,7 @@ func (publisher *SnapshotPublisher) Run() {
 	}
 }
 
-func getInstance() *SnapshotPublisher {
+func GetSnapshotPublisherInstance() *SnapshotPublisher {
 	if snapshotPublisherInstance == nil {
 		snapshotPublisherLock.Lock()
 		defer snapshotPublisherLock.Unlock()

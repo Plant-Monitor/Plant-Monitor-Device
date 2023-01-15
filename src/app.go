@@ -1,9 +1,10 @@
 package main
 
 import (
-	"fmt"
+	"pcs/snapshots"
 )
 
 func main() {
-	fmt.Println("Hello, world.")
+	snapshotPublisher := snapshots.GetSnapshotPublisherInstance()
+	snapshotPublisher.Run()
 }
