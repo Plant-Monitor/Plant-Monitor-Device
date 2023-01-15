@@ -2,7 +2,9 @@ package snapshots
 
 import (
 	"fmt"
+	"os"
 	"sync"
+	"time"
 )
 
 type SnapshotSubscriber interface {
@@ -23,7 +25,9 @@ func getSnapshotUpdaterInstance() *SnapshotUpdater {
 		defer snapshotUpdaterlock.Unlock()
 		if snapshotUpdaterInstance == nil {
 			fmt.Println("Creating SnapshotUpdater instance now.")
-			snapshotUpdaterInstance = &SnapshotUpdater{new(PeriodicUpdateStrategy)}
+			snapshotUpdateInterval := os.Getenv("SNAPSHOT_UPDATE_INTERVAL")
+			snapshotUpdateIntervalDuration, _ := time.ParseDuration(snapshotUpdateInterval)
+			snapshotUpdaterInstance = &SnapshotUpdater{NewPeriodicUpdateStrategy(snapshotUpdateIntervalDuration)}
 		} else {
 			fmt.Println("SnapshotUpdater instance already created.")
 		}
