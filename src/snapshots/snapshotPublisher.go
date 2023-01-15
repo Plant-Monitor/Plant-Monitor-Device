@@ -1,8 +1,8 @@
 package snapshots
 
 import (
-	"fmt"
 	"pcs/gpio"
+	"pcs/utils"
 	"sync"
 )
 
@@ -23,20 +23,15 @@ func (publisher *SnapshotPublisher) Run() {
 }
 
 func GetSnapshotPublisherInstance() *SnapshotPublisher {
-	if snapshotPublisherInstance == nil {
-		snapshotPublisherLock.Lock()
-		defer snapshotPublisherLock.Unlock()
-		if snapshotPublisherInstance == nil {
-			fmt.Println("Creating snapshotPublisher instance now.")
-			snapshotPublisherInstance = &SnapshotPublisher{gpioClient: gpio.GetGpioClientInstance()}
-		} else {
-			fmt.Println("snapshotPublisher instance already created.")
-		}
-	} else {
-		fmt.Println("snapshotPublisher instance already created.")
-	}
+	return utils.GetSingletonInstance[SnapshotPublisher](
+		snapshotPublisherInstance,
+		newSnapshotPublisher,
+		nil,
+	)
+}
 
-	return snapshotPublisherInstance
+func newSnapshotPublisher(initParams interface{}) *SnapshotPublisher {
+	return &SnapshotPublisher{}
 }
 
 // Add a subscriber to the publisher

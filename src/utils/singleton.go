@@ -9,11 +9,11 @@ type Singleton struct{}
 
 var lock = &sync.Mutex{}
 
-func getInstance[T any](
+func GetSingletonInstance[T any](
 	instance *T,
 	constructor func(interface{}) *T,
 	initParams interface{},
-) T {
+) *T {
 	if instance == nil {
 		lock.Lock()
 		defer lock.Unlock()
@@ -27,5 +27,5 @@ func getInstance[T any](
 		fmt.Println("Singleton instance already created.")
 	}
 
-	return *instance
+	return instance
 }
