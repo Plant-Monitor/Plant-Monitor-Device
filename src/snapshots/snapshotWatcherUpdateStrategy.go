@@ -1,9 +1,12 @@
 package snapshots
 
-import "time"
+import (
+	"pcs/models"
+	"time"
+)
 
 type SnapshotWatcherUpdateStrategy interface {
-	update(Snapshot)
+	update(models.Snapshot)
 }
 
 type PeriodicUpdateStrategy struct {
@@ -11,6 +14,6 @@ type PeriodicUpdateStrategy struct {
 	updateInterval time.Duration
 }
 
-func (perUpdateStrategy *PeriodicUpdateStrategy) update(snapshot Snapshot) {
+func (perUpdateStrategy *PeriodicUpdateStrategy) update(snapshot models.Snapshot) {
 
 }

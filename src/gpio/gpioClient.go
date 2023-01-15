@@ -3,6 +3,7 @@ package gpio
 import (
 	"fmt"
 	"pcs/config"
+	"pcs/models"
 	"sync"
 )
 
@@ -38,6 +39,6 @@ func (client *GpioClient) readPin(metric string) {
 
 }
 
-func (client *GpioClient) Read() map[string]float32 {
-	return make(map[string]float32)
+func (client *GpioClient) Read() models.ReadingsCollection {
+	return models.ReadingsCollection{}
 }

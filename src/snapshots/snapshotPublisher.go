@@ -2,8 +2,11 @@ package snapshots
 
 import (
 	"fmt"
+	"os"
 	"pcs/gpio"
+	"pcs/models"
 	"sync"
+	"time"
 )
 
 var snapshotPublisherLock = &sync.Mutex{}
@@ -11,7 +14,7 @@ var snapshotPublisherInstance *SnapshotPublisher
 
 type SnapshotPublisher struct {
 	subscribers  []SnapshotSubscriber
-	currentState Snapshot
+	currentState models.Snapshot
 	gpioClient   *gpio.GpioClient
 }
 
@@ -54,9 +57,14 @@ func (publisher *SnapshotPublisher) notifySubscribers() {
 // Update the state of the SnapshotPublisher by reading the GPIO pins
 func (publisher *SnapshotPublisher) updateState() {
 	currentReadings := publisher.gpioClient.Read()
-	publisher.currentState = publisher.buildSnapshot(currentReadings)
+	publisher.buildSnapshot(currentReadings)
 }
 
-func (publisher *SnapshotPublisher) buildSnapshot(readings map[string]float32) Snapshot {
-	return Snapshot{}
+func (publisher *SnapshotPublisher) buildSnapshot(readings models.ReadingsCollection) models.Snapshot {
+	publisher.currentState = models.Snapshot{
+		os.Getenv("USER_ID"),
+		os.Getenv("PLANT_ID"),
+		time.Now(),
+		readings,
+	}
 }
