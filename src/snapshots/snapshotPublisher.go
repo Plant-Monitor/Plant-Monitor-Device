@@ -2,14 +2,17 @@ package snapshots
 
 import (
 	"pcs/gpio"
+	"pcs/models"
 	"pcs/utils"
+	"sync"
 )
 
 var snapshotPublisherInstance *SnapshotPublisher
+var snapshotPublisherLock *sync.Mutex = &sync.Mutex{}
 
 type SnapshotPublisher struct {
 	subscribers  []SnapshotSubscriber
-	currentState Snapshot
+	currentState models.Snapshot
 	gpioClient   *gpio.GpioClient
 }
 
@@ -23,12 +26,13 @@ func (publisher *SnapshotPublisher) Run() {
 func GetSnapshotPublisherInstance() *SnapshotPublisher {
 	return utils.GetSingletonInstance(
 		snapshotPublisherInstance,
+		snapshotPublisherLock,
 		newSnapshotPublisher,
 		nil,
 	)
 }
 
-func newSnapshotPublisher(initParams interface{}) *SnapshotPublisher {
+func newSnapshotPublisher(initParams ...any) *SnapshotPublisher {
 	return &SnapshotPublisher{}
 }
 
@@ -50,6 +54,6 @@ func (publisher *SnapshotPublisher) updateState() {
 	publisher.currentState = publisher.buildSnapshot(currentReadings)
 }
 
-func (publisher *SnapshotPublisher) buildSnapshot(readings map[string]float32) Snapshot {
-	return Snapshot{}
+func (publisher *SnapshotPublisher) buildSnapshot(readings map[string]float32) models.Snapshot {
+	return models.Snapshot{}
 }

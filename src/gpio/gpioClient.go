@@ -3,6 +3,7 @@ package gpio
 import (
 	"pcs/config"
 	"pcs/utils"
+	"sync"
 )
 
 type GpioClient struct {
@@ -10,16 +11,18 @@ type GpioClient struct {
 }
 
 var gpioClientInstance *GpioClient
+var gpioClientLock *sync.Mutex = &sync.Mutex{}
 
 func GetGpioClientInstance() *GpioClient {
 	return utils.GetSingletonInstance(
 		gpioClientInstance,
+		gpioClientLock,
 		newGpioClient,
 		nil,
 	)
 }
 
-func newGpioClient(initParams interface{}) *GpioClient {
+func newGpioClient(initParams ...any) *GpioClient {
 	return &GpioClient{config.GetGpioConfigInstance()}
 }
 

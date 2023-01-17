@@ -6,18 +6,17 @@ import (
 
 type Singleton struct{}
 
-var lock = &sync.Mutex{}
-
 func GetSingletonInstance[T any](
 	instance *T,
-	constructor func(interface{}) *T,
-	initParams interface{},
+	lock *sync.Mutex,
+	constructor func(...any) *T,
+	initParams ...any,
 ) *T {
 	if instance == nil {
 		lock.Lock()
 		defer lock.Unlock()
 		if instance == nil {
-			instance = constructor(initParams)
+			instance = constructor(initParams...)
 		}
 	}
 
