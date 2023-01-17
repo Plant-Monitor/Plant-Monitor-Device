@@ -1,8 +1,7 @@
 package snapshots
 
 import (
-	"fmt"
-	"sync"
+	"pcs/utils"
 )
 
 type SnapshotSubscriber interface {
@@ -14,24 +13,18 @@ type SnapshotUpdater struct {
 	updateStrategy SnapshotWatcherUpdateStrategy
 }
 
-var snapshotUpdaterlock = &sync.Mutex{}
 var snapshotUpdaterInstance *SnapshotUpdater
 
-func getSnapshotUpdaterInstance() *SnapshotUpdater {
-	if snapshotUpdaterInstance == nil {
-		snapshotUpdaterlock.Lock()
-		defer snapshotUpdaterlock.Unlock()
-		if snapshotUpdaterInstance == nil {
-			fmt.Println("Creating SnapshotUpdater instance now.")
-			snapshotUpdaterInstance = &SnapshotUpdater{new(PeriodicUpdateStrategy)}
-		} else {
-			fmt.Println("SnapshotUpdater instance already created.")
-		}
-	} else {
-		fmt.Println("SnapshotUpdater instance already created.")
-	}
+func GetSnapshotUpdaterInstance() *SnapshotUpdater {
+	return utils.GetSingletonInstance(
+		snapshotUpdaterInstance,
+		newSnapshotUpdater,
+		nil,
+	)
+}
 
-	return snapshotUpdaterInstance
+func newSnapshotUpdater(initParams interface{}) *SnapshotUpdater {
+	return &SnapshotUpdater{new(PeriodicUpdateStrategy)}
 }
 
 func (snapshotUpdater *SnapshotUpdater) update(snapshot Snapshot) {
