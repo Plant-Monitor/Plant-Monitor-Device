@@ -1,11 +1,14 @@
 package snapshots
 
 import (
+	"os"
+	"pcs/models"
 	"pcs/utils"
+	"sync"
 )
 
 type SnapshotSubscriber interface {
-	update(Snapshot)
+	update(models.Snapshot)
 }
 
 // Implements SnapshotSubscriber. Role is to update DB after a configured timelapse
@@ -14,19 +17,24 @@ type SnapshotUpdater struct {
 }
 
 var snapshotUpdaterInstance *SnapshotUpdater
+var snapshotUpdaterLock *sync.Mutex = &sync.Mutex{}
 
 func GetSnapshotUpdaterInstance() *SnapshotUpdater {
+	updateInterval := os.Getenv("SNAPSHOT_UPDATE_INTERVAL")
+
 	return utils.GetSingletonInstance(
 		snapshotUpdaterInstance,
+		snapshotUpdaterLock,
 		newSnapshotUpdater,
-		nil,
+		updateInterval,
 	)
 }
 
-func newSnapshotUpdater(initParams interface{}) *SnapshotUpdater {
-	return &SnapshotUpdater{new(PeriodicUpdateStrategy)}
+func newSnapshotUpdater(initParams ...any) *SnapshotUpdater {
+	updateStrategy := NewPeriodicUpdateStrategy(initParams[0].(string))
+	return &SnapshotUpdater{updateStrategy: updateStrategy}
 }
 
-func (snapshotUpdater *SnapshotUpdater) update(snapshot Snapshot) {
+func (snapshotUpdater *SnapshotUpdater) update(snapshot models.Snapshot) {
 	snapshotUpdater.updateStrategy.update(snapshot)
 }

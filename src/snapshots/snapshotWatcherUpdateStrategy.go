@@ -1,40 +1,37 @@
 package snapshots
 
 import (
-	"context"
-	"os"
+	"pcs/models"
 	"pcs/utils"
 	"time"
-
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type SnapshotWatcherUpdateStrategy interface {
-	update(Snapshot)
+	update(models.Snapshot) bool
 }
 
 type PeriodicUpdateStrategy struct {
-	lastUpdate      *time.Time
-	updateInterval  time.Duration
-	mongoCollection *mongo.Collection
+	lastUpdate     *time.Time
+	updateInterval time.Duration
+	serverClient   *utils.ServerClient
 }
 
-func NewPeriodicUpdateStrategy(updateInterval time.Duration) *PeriodicUpdateStrategy {
-	env := os.Getenv("ENV")
+func NewPeriodicUpdateStrategy(updateInterval string) *PeriodicUpdateStrategy {
+	interval, _ := time.ParseDuration(updateInterval)
 
 	return &PeriodicUpdateStrategy{
 		nil,
-		updateInterval,
-		utils.SetupMongoConnection().Database(env).Collection("snapshotdocobjects"),
+		interval,
+		utils.GetServerClientInstance(),
 	}
 }
 
-func (perUpdateStrategy *PeriodicUpdateStrategy) update(snapshot Snapshot) {
+func (perUpdateStrategy *PeriodicUpdateStrategy) update(snapshot models.Snapshot) (didUpdate bool) {
 	if perUpdateStrategy.lastUpdate == nil || snapshot.Timestamp.Sub(*perUpdateStrategy.lastUpdate) >= perUpdateStrategy.updateInterval {
-		perUpdateStrategy.mongoCollection.InsertOne(
-			context.TODO(),
-			snapshot,
-		)
-		*perUpdateStrategy.lastUpdate = time.Now()
+		perUpdateStrategy.serverClient.WriteSnapshot(&snapshot)
+		timeNow := time.Now()
+		perUpdateStrategy.lastUpdate = &timeNow
+		return true
 	}
+	return false
 }
