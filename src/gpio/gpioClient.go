@@ -1,36 +1,25 @@
 package gpio
 
 import (
-	"fmt"
 	"pcs/config"
-	"sync"
+	"pcs/utils"
 )
 
 type GpioClient struct {
 	config *config.GpioConfig
 }
 
-var gpioClientLock = &sync.Mutex{}
 var gpioClientInstance *GpioClient
 
 func GetGpioClientInstance() *GpioClient {
-	if gpioClientInstance == nil {
-		gpioClientLock.Lock()
-		defer gpioClientLock.Unlock()
-		if gpioClientInstance == nil {
-			fmt.Println("Creating GpioClient instance now.")
-			gpioClientInstance = newGpioClient()
-		} else {
-			fmt.Println("GpioClient instance already created.")
-		}
-	} else {
-		fmt.Println("GpioClient instance already created.")
-	}
-
-	return gpioClientInstance
+	return utils.GetSingletonInstance(
+		gpioClientInstance,
+		newGpioClient,
+		nil,
+	)
 }
 
-func newGpioClient() *GpioClient {
+func newGpioClient(initParams interface{}) *GpioClient {
 	return &GpioClient{config.GetGpioConfigInstance()}
 }
 
