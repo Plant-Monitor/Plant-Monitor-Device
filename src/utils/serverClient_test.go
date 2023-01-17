@@ -16,7 +16,7 @@ func TestServerClient(t *testing.T) {
 		"Client receives a successful response",
 		func(t *testing.T) {
 			client := utils.GetServerClientInstance()
-			snapshot := models.BuildSnapshot()
+			snapshot := models.BuildSnapshot(models.ReadingsCollection{})
 			statusCode, err := client.WriteSnapshot(snapshot)
 
 			assert.Nil(t, err)

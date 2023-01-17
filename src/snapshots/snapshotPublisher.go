@@ -54,6 +54,6 @@ func (publisher *SnapshotPublisher) updateState() {
 	publisher.currentState = publisher.buildSnapshot(currentReadings)
 }
 
-func (publisher *SnapshotPublisher) buildSnapshot(readings map[string]float32) models.Snapshot {
+func (publisher *SnapshotPublisher) buildSnapshot(readings models.ReadingsCollection) models.Snapshot {
 	return models.Snapshot{}
 }
