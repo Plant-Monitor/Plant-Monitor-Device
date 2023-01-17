@@ -3,10 +3,8 @@ package snapshots
 import (
 	"pcs/gpio"
 	"pcs/utils"
-	"sync"
 )
 
-var snapshotPublisherLock = &sync.Mutex{}
 var snapshotPublisherInstance *SnapshotPublisher
 
 type SnapshotPublisher struct {
@@ -23,7 +21,7 @@ func (publisher *SnapshotPublisher) Run() {
 }
 
 func GetSnapshotPublisherInstance() *SnapshotPublisher {
-	return utils.GetSingletonInstance[SnapshotPublisher](
+	return utils.GetSingletonInstance(
 		snapshotPublisherInstance,
 		newSnapshotPublisher,
 		nil,
