@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"sync"
 )
 
@@ -18,13 +17,8 @@ func GetSingletonInstance[T any](
 		lock.Lock()
 		defer lock.Unlock()
 		if instance == nil {
-			fmt.Println("Creating Singleton instance now.")
 			instance = constructor(initParams)
-		} else {
-			fmt.Println("Singleton instance already created.")
 		}
-	} else {
-		fmt.Println("Singleton instance already created.")
 	}
 
 	return instance
