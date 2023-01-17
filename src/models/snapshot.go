@@ -8,13 +8,25 @@ import (
 )
 
 type Snapshot struct {
-	user_id           uuid.UUID
-	plant_id          uuid.UUID
-	timestamp         time.Time
-	health_properties ReadingsCollection
+	User_id           uuid.UUID          `json:"user_id"`
+	Plant_id          uuid.UUID          `json:"plant_id"`
+	Timestamp         time.Time          `json:"timestamp"`
+	Health_properties ReadingsCollection `json:"health_properties"`
 }
 
-func NewSnapshot(readings ReadingsCollection) *Snapshot {
+type ReadingsCollection map[Metric]HealthProperty
+
+type Metric string
+
+type HealthProperty struct {
+	Level          float32        `json:"level"`
+	Unit           string         `json:"unit"`
+	Interpretation Interpretation `json:"interpretation"`
+}
+
+type Interpretation int64
+
+func BuildSnapshot(readings ReadingsCollection) *Snapshot {
 	user_id, _ := uuid.Parse(os.Getenv("USER_ID"))
 	plant_id, _ := uuid.Parse(os.Getenv("PLANT_ID"))
 
@@ -25,15 +37,3 @@ func NewSnapshot(readings ReadingsCollection) *Snapshot {
 		readings,
 	}
 }
-
-type ReadingsCollection map[Metric]HealthProperty
-
-type Metric string
-
-type HealthProperty struct {
-	level          float32
-	unit           string
-	interpretation Interpretation
-}
-
-type Interpretation int64

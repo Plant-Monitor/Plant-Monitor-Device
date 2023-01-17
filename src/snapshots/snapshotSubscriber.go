@@ -1,12 +1,14 @@
 package snapshots
 
 import (
-	"fmt"
+	"os"
+	"pcs/models"
+	"pcs/utils"
 	"sync"
 )
 
 type SnapshotSubscriber interface {
-	update(Snapshot)
+	update(models.Snapshot)
 }
 
 // Implements SnapshotSubscriber. Role is to update DB after a configured timelapse
@@ -14,26 +16,25 @@ type SnapshotUpdater struct {
 	updateStrategy SnapshotWatcherUpdateStrategy
 }
 
-var snapshotUpdaterlock = &sync.Mutex{}
 var snapshotUpdaterInstance *SnapshotUpdater
+var snapshotUpdaterLock *sync.Mutex = &sync.Mutex{}
 
-func getSnapshotUpdaterInstance() *SnapshotUpdater {
-	if snapshotUpdaterInstance == nil {
-		snapshotUpdaterlock.Lock()
-		defer snapshotUpdaterlock.Unlock()
-		if snapshotUpdaterInstance == nil {
-			fmt.Println("Creating SnapshotUpdater instance now.")
-			snapshotUpdaterInstance = &SnapshotUpdater{new(PeriodicUpdateStrategy)}
-		} else {
-			fmt.Println("SnapshotUpdater instance already created.")
-		}
-	} else {
-		fmt.Println("SnapshotUpdater instance already created.")
-	}
+func GetSnapshotUpdaterInstance() *SnapshotUpdater {
+	updateInterval := os.Getenv("SNAPSHOT_UPDATE_INTERVAL")
 
-	return snapshotUpdaterInstance
+	return utils.GetSingletonInstance(
+		snapshotUpdaterInstance,
+		snapshotUpdaterLock,
+		newSnapshotUpdater,
+		updateInterval,
+	)
 }
 
-func (snapshotUpdater *SnapshotUpdater) update(snapshot Snapshot) {
+func newSnapshotUpdater(initParams ...any) *SnapshotUpdater {
+	updateStrategy := NewPeriodicUpdateStrategy(initParams[0].(string))
+	return &SnapshotUpdater{updateStrategy: updateStrategy}
+}
+
+func (snapshotUpdater *SnapshotUpdater) update(snapshot models.Snapshot) {
 	snapshotUpdater.updateStrategy.update(snapshot)
 }

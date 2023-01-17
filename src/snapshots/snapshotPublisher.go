@@ -1,14 +1,14 @@
 package snapshots
 
 import (
-	"fmt"
 	"pcs/gpio"
 	"pcs/models"
+	"pcs/utils"
 	"sync"
 )
 
-var snapshotPublisherLock = &sync.Mutex{}
 var snapshotPublisherInstance *SnapshotPublisher
+var snapshotPublisherLock *sync.Mutex = &sync.Mutex{}
 
 type SnapshotPublisher struct {
 	subscribers  []SnapshotSubscriber
@@ -24,20 +24,16 @@ func (publisher *SnapshotPublisher) Run() {
 }
 
 func GetSnapshotPublisherInstance() *SnapshotPublisher {
-	if snapshotPublisherInstance == nil {
-		snapshotPublisherLock.Lock()
-		defer snapshotPublisherLock.Unlock()
-		if snapshotPublisherInstance == nil {
-			fmt.Println("Creating snapshotPublisher instance now.")
-			snapshotPublisherInstance = &SnapshotPublisher{gpioClient: gpio.GetGpioClientInstance()}
-		} else {
-			fmt.Println("snapshotPublisher instance already created.")
-		}
-	} else {
-		fmt.Println("snapshotPublisher instance already created.")
-	}
+	return utils.GetSingletonInstance(
+		snapshotPublisherInstance,
+		snapshotPublisherLock,
+		newSnapshotPublisher,
+		nil,
+	)
+}
 
-	return snapshotPublisherInstance
+func newSnapshotPublisher(initParams ...any) *SnapshotPublisher {
+	return &SnapshotPublisher{}
 }
 
 // Add a subscriber to the publisher
@@ -55,5 +51,9 @@ func (publisher *SnapshotPublisher) notifySubscribers() {
 // Update the state of the SnapshotPublisher by reading the GPIO pins
 func (publisher *SnapshotPublisher) updateState() {
 	currentReadings := publisher.gpioClient.Read()
-	publisher.currentState = *models.NewSnapshot(currentReadings)
+	publisher.currentState = publisher.buildSnapshot(currentReadings)
+}
+
+func (publisher *SnapshotPublisher) buildSnapshot(readings models.ReadingsCollection) models.Snapshot {
+	return models.Snapshot{}
 }
