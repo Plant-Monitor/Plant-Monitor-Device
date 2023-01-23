@@ -18,4 +18,5 @@ func TestSnapshotPublisher(t *testing.T) {
 
 		assert.Equal(t, instance, instance2)
 	})
+
 }

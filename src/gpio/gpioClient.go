@@ -32,5 +32,5 @@ func (client *GpioClient) readPin(metric string) {
 }
 
 func (client *GpioClient) Read() models.PinReadingsCollection {
-	return models.ReadingsCollection{}
+	return models.PinReadingsCollection{}
 }

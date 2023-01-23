@@ -16,7 +16,7 @@ func TestPeriodicUpdateStrategy(t *testing.T) {
 			updateInterval := "4h"
 
 			strat := NewPeriodicUpdateStrategy(updateInterval)
-			snapshot1 := *models.BuildSnapshot(models.ReadingsCollection{})
+			snapshot1 := *models.BuildSnapshot(models.ConvertedReadingsCollection{})
 
 			assert.True(t, strat.update(snapshot1))
 		},
@@ -29,7 +29,7 @@ func TestPeriodicUpdateStrategy(t *testing.T) {
 			updateInterval := "4h"
 
 			strat := NewPeriodicUpdateStrategy(updateInterval)
-			snapshot1 := *models.BuildSnapshot(models.ReadingsCollection{})
+			snapshot1 := *models.BuildSnapshot(models.ConvertedReadingsCollection{})
 			snapshot2 := models.Snapshot{
 				Timestamp: time.Now().Add(duration),
 			}
@@ -46,7 +46,7 @@ func TestPeriodicUpdateStrategy(t *testing.T) {
 			updateInterval := "4h"
 
 			strat := NewPeriodicUpdateStrategy(updateInterval)
-			snapshot1 := *models.BuildSnapshot(models.ReadingsCollection{})
+			snapshot1 := *models.BuildSnapshot(models.ConvertedReadingsCollection{})
 			snapshot2 := models.Snapshot{
 				Timestamp: time.Now().Add(duration),
 			}
