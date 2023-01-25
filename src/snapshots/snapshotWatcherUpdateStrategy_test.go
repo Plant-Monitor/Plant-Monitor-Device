@@ -2,6 +2,7 @@ package snapshots
 
 import (
 	"pcs/models"
+	"pcs/utils"
 	"testing"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 )
 
 func TestPeriodicUpdateStrategy(t *testing.T) {
+	utils.LoadEnv()
 
 	t.Run(
 		"Should write to server since there hasn't been an update yet",
