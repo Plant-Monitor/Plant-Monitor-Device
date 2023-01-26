@@ -1,4 +1,4 @@
-package config
+package gpio
 
 import (
 	"os"
@@ -8,12 +8,12 @@ import (
 	"sync"
 )
 
-type GpioConfig map[models.Metric]models.Pin
+type gpioConfig map[models.Metric]models.Pin
 
-var gpioConfigInstance *GpioConfig
+var gpioConfigInstance *gpioConfig
 var gpioConfigLock = &sync.Mutex{}
 
-func GetGpioConfigInstance() *GpioConfig {
+func GetGpioConfigInstance() *gpioConfig {
 	return utils.GetSingletonInstance(
 		gpioConfigInstance,
 		gpioConfigLock,
@@ -22,12 +22,12 @@ func GetGpioConfigInstance() *GpioConfig {
 	)
 }
 
-func newGpioConfig(initParams ...any) *GpioConfig {
+func newGpioConfig(initParams ...any) *gpioConfig {
 	pinMapString := os.Getenv("PIN_MAP_STRING")
 	return parsePinMapString(pinMapString)
 }
 
-func parsePinMapString(pinMapString string) *GpioConfig {
+func parsePinMapString(pinMapString string) *gpioConfig {
 	var rslt = make(map[models.Metric]models.Pin)
 
 	pinMapSlice := strings.Fields(pinMapString)
@@ -40,7 +40,7 @@ func parsePinMapString(pinMapString string) *GpioConfig {
 			rslt[models.Metric(metric)] = models.Pin(elem)
 		}
 	}
-	instance := GpioConfig(rslt)
+	instance := gpioConfig(rslt)
 
 	return &instance
 }

@@ -1,14 +1,13 @@
 package gpio
 
 import (
-	"pcs/config"
 	"pcs/models"
 	"pcs/utils"
 	"sync"
 )
 
 type GpioClient struct {
-	config *config.GpioConfig
+	config *gpioConfig
 }
 
 var gpioClientInstance *GpioClient
@@ -24,7 +23,7 @@ func GetGpioClientInstance() *GpioClient {
 }
 
 func newGpioClient(initParams ...any) *GpioClient {
-	return &GpioClient{config.GetGpioConfigInstance()}
+	return &GpioClient{GetGpioConfigInstance()}
 }
 
 func (client *GpioClient) readDigitalValue(metric models.Metric) models.DigitalReading {

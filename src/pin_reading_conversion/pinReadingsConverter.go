@@ -1,14 +1,12 @@
 package pin_reading_conversion
 
 import (
-	"pcs/config"
 	"pcs/models"
 	"pcs/utils"
 	"sync"
 )
 
 type PinReadingsConverter struct {
-	gpioConfig                 *config.GpioConfig
 	metricToConversionStrategy map[models.Metric]digitalReadingConversionStrategy
 }
 
@@ -17,7 +15,6 @@ var pinReadingsConverterLock *sync.Mutex = &sync.Mutex{}
 
 func newPinReadingsConverter(initParams ...any) *PinReadingsConverter {
 	return &PinReadingsConverter{
-		config.GetGpioConfigInstance(),
 		make(map[models.Metric]digitalReadingConversionStrategy),
 	}
 }
