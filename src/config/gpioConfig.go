@@ -8,7 +8,7 @@ import (
 	"sync"
 )
 
-type GpioConfig map[models.Pin]models.Metric
+type GpioConfig map[models.Metric]models.Pin
 
 var gpioConfigInstance *GpioConfig
 var gpioConfigLock = &sync.Mutex{}
@@ -28,16 +28,16 @@ func newGpioConfig(initParams ...any) *GpioConfig {
 }
 
 func parsePinMapString(pinMapString string) *GpioConfig {
-	var rslt = make(map[models.Pin]models.Metric)
+	var rslt = make(map[models.Metric]models.Pin)
 
 	pinMapSlice := strings.Fields(pinMapString)
-	var pin string
+	var metric string
 
 	for index, elem := range pinMapSlice {
 		if index%2 == 0 {
-			pin = elem
+			metric = elem
 		} else {
-			rslt[models.Pin(pin)] = models.Metric(elem)
+			rslt[models.Metric(metric)] = models.Pin(elem)
 		}
 	}
 	instance := GpioConfig(rslt)

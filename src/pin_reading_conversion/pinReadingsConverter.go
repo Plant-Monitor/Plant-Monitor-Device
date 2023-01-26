@@ -8,7 +8,7 @@ import (
 )
 
 type PinReadingsConverter struct {
-	gpioConfig                 config.GpioConfig
+	gpioConfig                 *config.GpioConfig
 	metricToConversionStrategy map[models.Metric]digitalReadingConversionStrategy
 }
 
@@ -17,7 +17,7 @@ var pinReadingsConverterLock *sync.Mutex = &sync.Mutex{}
 
 func newPinReadingsConverter(initParams ...any) *PinReadingsConverter {
 	return &PinReadingsConverter{
-		*config.GetGpioConfigInstance(),
+		config.GetGpioConfigInstance(),
 		make(map[models.Metric]digitalReadingConversionStrategy),
 	}
 }
@@ -31,12 +31,11 @@ func GetPinReadingsConverterInstance() *PinReadingsConverter {
 	)
 }
 
-func (converter *PinReadingsConverter) Convert(pinReads models.PinReadingsCollection) models.ConvertedReadingsCollection {
+func (converter *PinReadingsConverter) Convert(reads models.DigitalReadingsCollection) models.ConvertedReadingsCollection {
 	convertedReads := models.ConvertedReadingsCollection{}
 
-	for pin, reading := range pinReads {
-		metric := converter.gpioConfig[pin]
-		convertedReads[metric] = converter.metricToConversionStrategy[metric].convert(reading)
+	for metric, read := range reads {
+		convertedReads[metric] = converter.metricToConversionStrategy[metric].convert(read)
 	}
 
 	return convertedReads
