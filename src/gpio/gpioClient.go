@@ -27,8 +27,12 @@ func newGpioClient(initParams ...any) *GpioClient {
 	return &GpioClient{config.GetGpioConfigInstance()}
 }
 
-func (client *GpioClient) readPin(metric string) {
-
+func (client *GpioClient) readDigitalValue(metric models.Metric) models.PinReading {
+	/*
+		TODO:
+		Implement digital signal reading as a function of the target metric.
+		Logic will depend on chosen communication protocol.
+	*/
 }
 
 func (client *GpioClient) Read() models.PinReadingsCollection {
