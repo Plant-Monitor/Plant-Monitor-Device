@@ -29,7 +29,6 @@ func newServerClient(initParams ...any) *ServerClient {
 
 func GetServerClientInstance() *ServerClient {
 
-	fmt.Println("here. ")
 	return GetSingletonInstance(
 		serverClientInstance,
 		serverClientLock,
