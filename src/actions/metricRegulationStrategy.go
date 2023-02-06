@@ -5,11 +5,11 @@ type iMetricRegulationStrategy interface {
 }
 
 type MetricRegulationStrategy struct {
-	actionFactory ActionFactory
-	actionsStore  ActionsStore
+	actionFactory actionFactory
+	actionsStore  *actionsStore
 }
 
 // Probably subject to overriding or template method
-func (strat *MetricRegulationStrategy) dispatchAction() {
-	actionsStore.add(actionFactory.create())
+func (strat *MetricRegulationStrategy) DispatchAction() {
+	strat.actionsStore.add(strat.actionFactory.create())
 }

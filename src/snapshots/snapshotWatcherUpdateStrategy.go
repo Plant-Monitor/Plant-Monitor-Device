@@ -1,6 +1,7 @@
 package snapshots
 
 import (
+	"pcs/actions"
 	"pcs/analysis"
 	"pcs/models"
 	"pcs/utils"
@@ -39,19 +40,19 @@ func (perUpdateStrategy *PeriodicUpdateStrategy) update(snapshot *models.Snapsho
 
 type MetricSubscriberUpdateStrategy struct {
 	analysisStrategy   analysis.MetricAnalysisStrategy
-	regulationStrategy MetricRegulationStrategy
+	regulationStrategy actions.MetricRegulationStrategy
 }
 
 func (strat *MetricSubscriberUpdateStrategy) create(
 	analysisStrat analysis.MetricAnalysisStrategy,
-	regulationStrat MetricRegulationStrategy,
+	regulationStrat actions.MetricRegulationStrategy,
 ) *MetricSubscriberUpdateStrategy {
 	return &MetricSubscriberUpdateStrategy{analysisStrat, regulationStrat}
 }
 
 func (strat *MetricSubscriberUpdateStrategy) update(snapshot *models.Snapshot) bool {
 	if strat.analysisStrategy.Interpret(snapshot) == models.CRITICAL {
-		strat.regulationStrategy.dispatchAction()
+		strat.regulationStrategy.DispatchAction()
 		return true
 	}
 	return false

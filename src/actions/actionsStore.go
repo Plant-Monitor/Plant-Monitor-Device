@@ -17,7 +17,7 @@ func (store *actionsStore) add(action action) {
 	store.actionsQueue = append(store.actionsQueue, action)
 }
 
-type automatedActionsStore actionsStore
+type automatedActionsStore struct{ actionsStore }
 
 var automatedActionsStoreInstance *automatedActionsStore
 var automatedActionsStoreLock *sync.Mutex = &sync.Mutex{}
@@ -37,7 +37,7 @@ func newAutomatedActionsStore(initParams ...any) *automatedActionsStore {
 	}
 }
 
-type userActionsStore actionsStore
+type userActionsStore struct{ actionsStore }
 
 var userActionsStoreInstance *userActionsStore
 var userActionsStoreLock *sync.Mutex = &sync.Mutex{}

@@ -20,7 +20,7 @@ func TestPeriodicUpdateStrategy(t *testing.T) {
 			strat := NewPeriodicUpdateStrategy(updateInterval)
 			snapshot1 := *models.BuildSnapshot(models.ConvertedReadingsCollection{})
 
-			assert.True(t, strat.update(snapshot1))
+			assert.True(t, strat.update(&snapshot1))
 		},
 	)
 
@@ -36,8 +36,8 @@ func TestPeriodicUpdateStrategy(t *testing.T) {
 				Timestamp: time.Now().Add(duration),
 			}
 
-			assert.True(t, strat.update(snapshot1))
-			assert.True(t, strat.update(snapshot2))
+			assert.True(t, strat.update(&snapshot1))
+			assert.True(t, strat.update(&snapshot2))
 		},
 	)
 
@@ -53,8 +53,8 @@ func TestPeriodicUpdateStrategy(t *testing.T) {
 				Timestamp: time.Now().Add(duration),
 			}
 
-			assert.True(t, strat.update(snapshot1))
-			assert.False(t, strat.update(snapshot2))
+			assert.True(t, strat.update(&snapshot1))
+			assert.False(t, strat.update(&snapshot2))
 		},
 	)
 }
