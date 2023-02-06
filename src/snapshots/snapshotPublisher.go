@@ -14,7 +14,7 @@ var snapshotPublisherLock *sync.Mutex = &sync.Mutex{}
 type SnapshotPublisher struct {
 	subscribers       []SnapshotSubscriber
 	updater           SnapshotUpdater
-	currentState      models.Snapshot
+	currentState      *models.Snapshot
 	gpioClient        *gpio.GpioClient
 	readingsConverter *pin_reading_conversion.PinReadingsConverter
 }
@@ -65,6 +65,6 @@ func (publisher *SnapshotPublisher) updateState() {
 }
 
 // Build snapshot from the provided readings collection
-func (publisher *SnapshotPublisher) buildSnapshot(readings models.ConvertedReadingsCollection) models.Snapshot {
-	return *models.BuildSnapshot(readings)
+func (publisher *SnapshotPublisher) buildSnapshot(readings models.ConvertedReadingsCollection) *models.Snapshot {
+	return models.BuildSnapshot(readings)
 }

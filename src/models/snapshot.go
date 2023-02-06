@@ -14,7 +14,7 @@ type Snapshot struct {
 	Health_properties ConvertedReadingsCollection `json:"health_properties"`
 }
 
-type ConvertedReadingsCollection map[Metric]HealthProperty
+type ConvertedReadingsCollection map[Metric]*HealthProperty
 
 type Metric string
 
@@ -25,6 +25,12 @@ type HealthProperty struct {
 }
 
 type Interpretation int64
+
+const (
+	GOOD Interpretation = iota
+	OKAY
+	CRITICAL
+)
 
 func BuildSnapshot(readings ConvertedReadingsCollection) *Snapshot {
 	user_id, _ := uuid.Parse(os.Getenv("USER_ID"))
