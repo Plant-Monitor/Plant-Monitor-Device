@@ -22,6 +22,9 @@ func GetGpioConfigInstance() *gpioConfig {
 	)
 }
 
+/*
+Retrieve the pin map that is stored in the .env files. It is formatted as a [Metric]Pin map
+*/
 func newGpioConfig(initParams ...any) *gpioConfig {
 	pinMapString := os.Getenv("PIN_MAP_STRING")
 	return parsePinMapString(pinMapString)

@@ -26,7 +26,7 @@ func newGpioClient(initParams ...any) *GpioClient {
 	return &GpioClient{GetGpioConfigInstance()}
 }
 
-func (client *GpioClient) readDigitalValue(metric models.Metric) models.DigitalReading {
+func (client *GpioClient) readDigitalValue(pin models.Pin) models.DigitalReading {
 	/*
 		TODO:
 		Implement digital signal reading as a function of the target metric.
@@ -38,8 +38,8 @@ func (client *GpioClient) readDigitalValue(metric models.Metric) models.DigitalR
 func (client *GpioClient) Read() models.DigitalReadingsCollection {
 	readsColl := make(models.DigitalReadingsCollection)
 
-	for metric, _ := range *client.config {
-		readsColl[metric] = client.readDigitalValue(metric)
+	for metric, pin := range *client.config {
+		readsColl[metric] = client.readDigitalValue(pin)
 	}
 	return readsColl
 }
