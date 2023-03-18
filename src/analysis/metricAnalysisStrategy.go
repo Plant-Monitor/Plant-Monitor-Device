@@ -7,7 +7,7 @@ import (
 
 type iMetricAnalysisStrategy interface {
 	analyze(level float32) models.Interpretation
-	Interpret(snapshot *models.Snapshot) models.Interpretation
+	Interpret(snapshot models.Snapshot) models.Interpretation
 }
 
 type MetricAnalysisStrategy struct {
@@ -16,7 +16,7 @@ type MetricAnalysisStrategy struct {
 	analyze func(level float32) models.Interpretation
 }
 
-func (strat *MetricAnalysisStrategy) Interpret(snapshot *models.Snapshot) models.Interpretation {
+func (strat *MetricAnalysisStrategy) Interpret(snapshot models.Snapshot) models.Interpretation {
 	healthProp := snapshot.HealthProperties[strat.metric]
 	interpretation := strat.analyze(healthProp.Level)
 	healthProp.Interpretation = interpretation

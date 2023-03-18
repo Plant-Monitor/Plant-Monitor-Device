@@ -5,7 +5,7 @@ import "pcs/models"
 type iMetricRegulationStrategy interface {
 	dispatchAction()
 	decide(snapshot models.Snapshot) bool
-	regulate(snapshot models.Snapshot)
+	Regulate(snapshot models.Snapshot)
 }
 
 type MetricRegulationStrategy struct {
@@ -20,7 +20,7 @@ func (strat *MetricRegulationStrategy) dispatchAction() {
 	strat.actionsStore.add(strat.actionFactory.create())
 }
 
-func (strat *MetricRegulationStrategy) regulate(snapshot models.Snapshot) {
+func (strat *MetricRegulationStrategy) Regulate(snapshot models.Snapshot) {
 	if strat.decide(snapshot) {
 		strat.dispatchAction()
 	}

@@ -54,9 +54,8 @@ func (strat *MetricSubscriberUpdateStrategy) create(
 }
 
 func (strat *MetricSubscriberUpdateStrategy) update(snapshot *models.Snapshot) bool {
-	if strat.analysisStrategy.Interpret(snapshot) == models.CRITICAL {
-		strat.regulationStrategy.DispatchAction()
-		return true
-	}
+	strat.analysisStrategy.Interpret(*snapshot)
+	strat.regulationStrategy.Regulate(*snapshot)
+
 	return false
 }
