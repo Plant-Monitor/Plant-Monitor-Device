@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"pcs/models"
+	"pcs/models/dto"
 	"sync"
 )
 
@@ -43,6 +44,25 @@ func (client *ServerClient) WriteSnapshot(snapshot *models.Snapshot) (statusCode
 
 	resp, err := http.Post(
 		string(fmt.Sprintf("%s/snapshots", client.hostUri)),
+		"application/json",
+		requestBody,
+	)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+
+	statusCode = resp.StatusCode
+
+	return statusCode, err
+}
+
+func (client *ServerClient) WriteAction(dto dto.ActionDto) (statusCode int, err error) {
+	snapshotJSON, _ := json.Marshal(dto)
+	requestBody := bytes.NewBuffer(snapshotJSON)
+
+	resp, err := http.Post(
+		string(fmt.Sprintf("%s/actions/create", client.hostUri)),
 		"application/json",
 		requestBody,
 	)
