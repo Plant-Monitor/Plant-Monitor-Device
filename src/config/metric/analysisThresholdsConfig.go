@@ -1,6 +1,10 @@
 package config
 
 import (
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
 	"pcs/models"
 	"pcs/utils"
 	"sync"
@@ -28,8 +32,28 @@ func GetMetricAnalysisThresholdMapInstance() *MetricAnalysisThresholdMap {
 }
 
 func newThresholdMap(initParams ...any) *MetricAnalysisThresholdMap {
-	var instance MetricAnalysisThresholdMap
-	// todo(pcs-51) complete json loading and unmarshalling
+	return loadThresholdMap()
+}
 
-	return &instance
+func loadThresholdMap() *MetricAnalysisThresholdMap {
+
+	content, err := os.ReadFile(
+		fmt.Sprintf(
+			"%s/src/config/metric/analysisThresholds.json",
+			os.Getenv("PATH_TO_PROJECT"),
+		),
+	)
+
+	if err != nil {
+		log.Fatal("Error when opening file: ", err)
+	}
+
+	// Unmarshalling data
+	var payload MetricAnalysisThresholdMap
+	err = json.Unmarshal(content, &payload)
+	if err != nil {
+		log.Fatal("Error during Unmarshal(): ", err)
+	}
+
+	return &payload
 }

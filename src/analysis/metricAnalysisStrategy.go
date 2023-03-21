@@ -10,13 +10,13 @@ type iMetricAnalysisStrategy interface {
 	Interpret(snapshot models.Snapshot) models.Interpretation
 }
 
-type MetricAnalysisStrategy struct {
+type metricAnalysisStrategy struct {
 	metric models.Metric
 
 	analyze func(level float32) models.Interpretation
 }
 
-func (strat *MetricAnalysisStrategy) Interpret(snapshot models.Snapshot) models.Interpretation {
+func (strat *metricAnalysisStrategy) Interpret(snapshot models.Snapshot) models.Interpretation {
 	healthProp := snapshot.HealthProperties[strat.metric]
 	interpretation := strat.analyze(healthProp.Level)
 	healthProp.Interpretation = interpretation
@@ -24,7 +24,16 @@ func (strat *MetricAnalysisStrategy) Interpret(snapshot models.Snapshot) models.
 }
 
 type ThresholdAnalysisStrategy struct {
-	MetricAnalysisStrategy
+	metricAnalysisStrategy
+}
+
+func NewThresholdAnalysisStrategy(metric models.Metric) *ThresholdAnalysisStrategy {
+	instance := &ThresholdAnalysisStrategy{
+		metricAnalysisStrategy{metric: metric},
+	}
+	instance.metricAnalysisStrategy.analyze = instance.analyze
+
+	return instance
 }
 
 func (strat *ThresholdAnalysisStrategy) analyze(level float32) models.Interpretation {
@@ -33,7 +42,7 @@ func (strat *ThresholdAnalysisStrategy) analyze(level float32) models.Interpreta
 	switch {
 	case level <= threshCollection.LowerCriticalThreshold || level >= threshCollection.UpperCriticalThreshold:
 		return models.CRITICAL
-	case level >= threshCollection.GoodMinThreshold || level <= threshCollection.GoodMaxThreshold:
+	case level >= threshCollection.GoodMinThreshold && level <= threshCollection.GoodMaxThreshold:
 		return models.GOOD
 	default:
 		return models.OKAY
@@ -42,3 +51,8 @@ func (strat *ThresholdAnalysisStrategy) analyze(level float32) models.Interpreta
 }
 
 // todo(pcs-51) Subclass of thresholdAnalysisStrategy that only uses the threshold analysis during certain hours of the day
+type TimeSpannedThresholdAnalysisStrategy struct {
+	ThresholdAnalysisStrategy
+}
+
+// todo(pcs-51) make constructor for TimeSpannedThresholdAnalysisStrategy
