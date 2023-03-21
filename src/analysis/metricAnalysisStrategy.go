@@ -10,13 +10,13 @@ type iMetricAnalysisStrategy interface {
 	Interpret(snapshot models.Snapshot) models.Interpretation
 }
 
-type metricAnalysisStrategy struct {
+type MetricAnalysisStrategy struct {
 	metric models.Metric
 
 	analyze func(level float32) models.Interpretation
 }
 
-func (strat *metricAnalysisStrategy) Interpret(snapshot models.Snapshot) models.Interpretation {
+func (strat *MetricAnalysisStrategy) Interpret(snapshot models.Snapshot) models.Interpretation {
 	healthProp := snapshot.HealthProperties[strat.metric]
 	interpretation := strat.analyze(healthProp.Level)
 	healthProp.Interpretation = interpretation
@@ -24,14 +24,14 @@ func (strat *metricAnalysisStrategy) Interpret(snapshot models.Snapshot) models.
 }
 
 type ThresholdAnalysisStrategy struct {
-	metricAnalysisStrategy
+	MetricAnalysisStrategy
 }
 
 func NewThresholdAnalysisStrategy(metric models.Metric) *ThresholdAnalysisStrategy {
 	instance := &ThresholdAnalysisStrategy{
-		metricAnalysisStrategy{metric: metric},
+		MetricAnalysisStrategy{metric: metric},
 	}
-	instance.metricAnalysisStrategy.analyze = instance.analyze
+	instance.MetricAnalysisStrategy.analyze = instance.analyze
 
 	return instance
 }
