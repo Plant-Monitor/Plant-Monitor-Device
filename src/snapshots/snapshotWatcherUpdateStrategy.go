@@ -42,20 +42,20 @@ func (perUpdateStrategy *PeriodicUpdateStrategy) update(snapshot *models.Snapsho
 }
 
 type MetricSubscriberUpdateStrategy struct {
-	analysisStrategy   analysis.MetricAnalysisStrategy
-	regulationStrategy actions.MetricRegulationStrategy
+	analysisStrategy   analysis.IMetricAnalysisStrategy
+	regulationStrategy actions.IMetricRegulationStrategy
 }
 
 func (strat *MetricSubscriberUpdateStrategy) create(
-	analysisStrat analysis.MetricAnalysisStrategy,
-	regulationStrat actions.MetricRegulationStrategy,
+	analysisStrat analysis.IMetricAnalysisStrategy,
+	regulationStrat actions.IMetricRegulationStrategy,
 ) *MetricSubscriberUpdateStrategy {
 	return &MetricSubscriberUpdateStrategy{analysisStrat, regulationStrat}
 }
 
 func (strat *MetricSubscriberUpdateStrategy) update(snapshot *models.Snapshot) bool {
-	strat.analysisStrategy.Interpret(*snapshot)
-	strat.regulationStrategy.Regulate(*snapshot)
+	strat.analysisStrategy.Interpret(strat.analysisStrategy, *snapshot)
+	//strat.regulationStrategy.Regulate(*snapshot)
 
 	return false
 }

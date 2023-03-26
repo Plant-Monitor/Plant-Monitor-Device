@@ -2,26 +2,26 @@ package actions
 
 import "pcs/models"
 
-type iMetricRegulationStrategy interface {
+type IMetricRegulationStrategy interface {
 	dispatchAction()
 	decide(snapshot models.Snapshot) bool
-	Regulate(snapshot models.Snapshot)
+	Regulate(i IMetricRegulationStrategy, snapshot models.Snapshot)
 }
 
-type MetricRegulationStrategy struct {
-	iMetricRegulationStrategy
+type metricRegulationStrategy struct {
+	//iMetricRegulationStrategy
 	actionFactory actionFactory
 	actionsStore  *actionsStore
 	metric        models.Metric
 }
 
 // Probably subject to overriding or template method
-func (strat *MetricRegulationStrategy) dispatchAction() {
+func (strat *metricRegulationStrategy) dispatchAction() {
 	strat.actionsStore.add(strat.actionFactory.create())
 }
 
-func (strat *MetricRegulationStrategy) Regulate(snapshot models.Snapshot) {
-	if strat.decide(snapshot) {
+func (strat *metricRegulationStrategy) Regulate(i IMetricRegulationStrategy, snapshot models.Snapshot) {
+	if i.decide(snapshot) {
 		strat.dispatchAction()
 	}
 }

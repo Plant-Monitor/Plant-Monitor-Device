@@ -1,9 +1,6 @@
 package snapshots_test
 
 import (
-	"github.com/joho/godotenv"
-	"pcs/analysis"
-	"pcs/models"
 	"pcs/snapshots"
 	"pcs/utils"
 	"testing"
@@ -27,27 +24,30 @@ func TestSnapshotUpdater(t *testing.T) {
 }
 
 func TestMetricSubscriberUpdateStrategy(t *testing.T) {
-	setup := func() {
-		err := godotenv.Load("../../.env")
-		if err != nil {
-			return
-		}
-	}
-
-	t.Run("Should update the snapshot metric's interpretation", func(t *testing.T) {
-		var testedMetric models.Metric
-		var strategy *analysis.MetricAnalysisStrategy
-
-		setup := func() {
-			setup()
-			testedMetric = "moisture"
-			strategy = analysis.MetricAnalysisStrategy(analysis.NewThresholdAnalysisStrategy(testedMetric))
-
-		}
-
-		t.Run("HealthProperty should be given the interpretation CRITICAL", func(t *testing.T){
-			setup()
-			snapshot :=
-		})
-	})
+	//setup := func() {
+	//	err := godotenv.Load("../../.env")
+	//	if err != nil {
+	//		return
+	//	}
+	//}
+	//
+	//t.Run("Should update the snapshot metric's interpretation", func(t *testing.T) {
+	//	var testedMetric models.Metric
+	//	var updateStrategy *snapshots.MetricSubscriberUpdateStrategy
+	//
+	//	setup := func() {
+	//		setup()
+	//		testedMetric = "moisture"
+	//		updateStrategy = create(
+	//			analysis.NewThresholdAnalysisStrategy(testedMetric),
+	//			actions.IMetricRegulationStrategy
+	//			)
+	//		strategy = analysis.NewThresholdAnalysisStrategy(testedMetric)
+	//	}
+	//
+	//	t.Run("HealthProperty should be given the interpretation CRITICAL", func(t *testing.T){
+	//		setup()
+	//		snapshot :=
+	//	})
+	//})
 }

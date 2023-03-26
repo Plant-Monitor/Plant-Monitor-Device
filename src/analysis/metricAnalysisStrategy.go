@@ -5,35 +5,30 @@ import (
 	"pcs/models"
 )
 
-type iMetricAnalysisStrategy interface {
+type IMetricAnalysisStrategy interface {
 	analyze(level float32) models.Interpretation
-	Interpret(snapshot models.Snapshot) models.Interpretation
+	Interpret(i IMetricAnalysisStrategy, snapshot models.Snapshot) models.Interpretation
 }
 
-type MetricAnalysisStrategy struct {
+type metricAnalysisStrategy struct {
 	metric models.Metric
-
-	analyze func(level float32) models.Interpretation
 }
 
-func (strat *MetricAnalysisStrategy) Interpret(snapshot models.Snapshot) models.Interpretation {
+func (strat *metricAnalysisStrategy) Interpret(i IMetricAnalysisStrategy, snapshot models.Snapshot) models.Interpretation {
 	healthProp := snapshot.HealthProperties[strat.metric]
-	interpretation := strat.analyze(healthProp.Level)
+	interpretation := i.analyze(healthProp.Level)
 	healthProp.Interpretation = interpretation
 	return interpretation
 }
 
 type ThresholdAnalysisStrategy struct {
-	MetricAnalysisStrategy
+	metricAnalysisStrategy
 }
 
 func NewThresholdAnalysisStrategy(metric models.Metric) *ThresholdAnalysisStrategy {
-	instance := &ThresholdAnalysisStrategy{
-		MetricAnalysisStrategy{metric: metric},
+	return &ThresholdAnalysisStrategy{
+		metricAnalysisStrategy{metric: metric},
 	}
-	instance.MetricAnalysisStrategy.analyze = instance.analyze
-
-	return instance
 }
 
 func (strat *ThresholdAnalysisStrategy) analyze(level float32) models.Interpretation {

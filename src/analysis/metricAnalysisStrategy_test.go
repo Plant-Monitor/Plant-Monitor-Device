@@ -69,7 +69,7 @@ func TestThresholdAnalysisStrategy(t *testing.T) {
 				},
 			}
 
-			strategy.Interpret(snapshot)
+			strategy.Interpret(strategy, snapshot)
 			assert.Equal(t, models.CRITICAL, snapshot.HealthProperties[testedMetric].Interpretation)
 		})
 		t.Run("Should return critical when level is too low", func(t *testing.T) {
@@ -81,7 +81,7 @@ func TestThresholdAnalysisStrategy(t *testing.T) {
 				},
 			}
 
-			strategy.Interpret(snapshot)
+			strategy.Interpret(strategy, snapshot)
 			assert.Equal(t, models.CRITICAL, snapshot.HealthProperties[testedMetric].Interpretation)
 		})
 		t.Run("Should return good when level is within the right range", func(t *testing.T) {
@@ -93,7 +93,7 @@ func TestThresholdAnalysisStrategy(t *testing.T) {
 				},
 			}
 
-			strategy.Interpret(snapshot)
+			strategy.Interpret(strategy, snapshot)
 			assert.Equal(t, models.GOOD, snapshot.HealthProperties[testedMetric].Interpretation)
 		})
 		t.Run("Should return OKAY when level is in lower range", func(t *testing.T) {
@@ -105,7 +105,7 @@ func TestThresholdAnalysisStrategy(t *testing.T) {
 				},
 			}
 
-			strategy.Interpret(snapshot)
+			strategy.Interpret(strategy, snapshot)
 			assert.Equal(t, models.OKAY, snapshot.HealthProperties[testedMetric].Interpretation)
 		})
 		t.Run("Should return OKAY when level is in upper range", func(t *testing.T) {
@@ -117,7 +117,7 @@ func TestThresholdAnalysisStrategy(t *testing.T) {
 				},
 			}
 
-			strategy.Interpret(snapshot)
+			strategy.Interpret(strategy, snapshot)
 			assert.Equal(t, models.OKAY, snapshot.HealthProperties[testedMetric].Interpretation)
 		})
 	})
