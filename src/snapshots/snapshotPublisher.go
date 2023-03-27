@@ -44,7 +44,7 @@ func newSnapshotPublisher(initParams ...any) *SnapshotPublisher {
 	}
 }
 
-// Add a subscriber to the publisher
+// Subscribe Add a subscriber to the publisher
 func (publisher *SnapshotPublisher) Subscribe(sub SnapshotSubscriber) {
 	publisher.subscribers = append(publisher.subscribers, sub)
 }

@@ -5,6 +5,8 @@ import (
 	"sync"
 )
 
+/* actionsStore ABSTRACT CLASS */
+
 type iActionsStore interface {
 	add(action action)
 }
@@ -16,6 +18,8 @@ type actionsStore struct {
 func (store *actionsStore) add(action action) {
 	store.actionsQueue = append(store.actionsQueue, action)
 }
+
+/* automatedActionsStore CLASS */
 
 type automatedActionsStore struct{ actionsStore }
 
@@ -33,9 +37,17 @@ func getAutomatedActionsStoreInstance() *automatedActionsStore {
 
 func newAutomatedActionsStore(initParams ...any) *automatedActionsStore {
 	return &automatedActionsStore{
-		make([]automatedAction, 0),
+		actionsStore: actionsStore{
+			actionsQueue: make([]action, 0),
+		},
 	}
 }
+
+func (store *automatedActionsStore) add(action automatedAction) {
+	store.actionsStore.add(action)
+}
+
+/* userActionsStore CLASS */
 
 type userActionsStore struct{ actionsStore }
 
@@ -53,6 +65,12 @@ func getuserActionsStoreInstance() *userActionsStore {
 
 func newUserActionsStore(initParams ...any) *userActionsStore {
 	return &userActionsStore{
-		make([]userAction, 0),
+		actionsStore: actionsStore{
+			actionsQueue: make([]action, 0),
+		},
 	}
+}
+
+func (store *userActionsStore) add(action userAction) {
+	store.actionsStore.add(action)
 }

@@ -30,7 +30,10 @@ func NewPeriodicUpdateStrategy(updateInterval string) *PeriodicUpdateStrategy {
 
 func (perUpdateStrategy *PeriodicUpdateStrategy) update(snapshot *models.Snapshot) (didUpdate bool) {
 	if perUpdateStrategy.lastUpdate == nil || snapshot.Timestamp.Sub(*perUpdateStrategy.lastUpdate) >= perUpdateStrategy.updateInterval {
-		perUpdateStrategy.serverClient.WriteSnapshot(snapshot)
+		_, err := perUpdateStrategy.serverClient.WriteSnapshot(snapshot)
+		if err != nil {
+			return false
+		}
 		timeNow := time.Now()
 		perUpdateStrategy.lastUpdate = &timeNow
 		return true
@@ -39,21 +42,20 @@ func (perUpdateStrategy *PeriodicUpdateStrategy) update(snapshot *models.Snapsho
 }
 
 type MetricSubscriberUpdateStrategy struct {
-	analysisStrategy   analysis.MetricAnalysisStrategy
-	regulationStrategy actions.MetricRegulationStrategy
+	analysisStrategy   analysis.IMetricAnalysisStrategy
+	regulationStrategy actions.IMetricRegulationStrategy
 }
 
 func (strat *MetricSubscriberUpdateStrategy) create(
-	analysisStrat analysis.MetricAnalysisStrategy,
-	regulationStrat actions.MetricRegulationStrategy,
+	analysisStrat analysis.IMetricAnalysisStrategy,
+	regulationStrat actions.IMetricRegulationStrategy,
 ) *MetricSubscriberUpdateStrategy {
 	return &MetricSubscriberUpdateStrategy{analysisStrat, regulationStrat}
 }
 
 func (strat *MetricSubscriberUpdateStrategy) update(snapshot *models.Snapshot) bool {
-	if strat.analysisStrategy.Interpret(snapshot) == models.CRITICAL {
-		strat.regulationStrategy.DispatchAction()
-		return true
-	}
+	strat.analysisStrategy.Interpret(strat.analysisStrategy, *snapshot)
+	//strat.regulationStrategy.Regulate(*snapshot)
+
 	return false
 }
