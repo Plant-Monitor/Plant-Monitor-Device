@@ -16,7 +16,7 @@ type metricRegulationStrategy struct {
 
 // Probably subject to overriding or template method
 func (strat *metricRegulationStrategy) dispatchAction() {
-	strat.actionsStore.add(strat.actionFactory.create())
+
 }
 
 func (strat *metricRegulationStrategy) Regulate(i IMetricRegulationStrategy, snapshot models.Snapshot) {
