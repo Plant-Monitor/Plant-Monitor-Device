@@ -10,9 +10,8 @@ type IMetricRegulationStrategy interface {
 
 type metricRegulationStrategy struct {
 	//iMetricRegulationStrategy
-	actionFactory actionFactory
-	actionsStore  *actionsStore
-	metric        models.Metric
+	actionsStore *actionsStore
+	metric       models.Metric
 }
 
 // Probably subject to overriding or template method
