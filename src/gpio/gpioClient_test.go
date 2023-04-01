@@ -6,6 +6,7 @@ import (
 	"github.com/joho/godotenv"
 	"os"
 	"testing"
+	"time"
 )
 
 func TestReadDigitalValue(t *testing.T) {
@@ -23,6 +24,9 @@ func TestReadDigitalValue(t *testing.T) {
 		setup()
 		scanner := bufio.NewScanner(os.Stdin)
 		done := false
+
+		fmt.Println("Press any key to stop output at any time")
+		time.Sleep(3 * time.Second)
 
 		for !done {
 			// Read from peripheral 0
@@ -55,9 +59,12 @@ func TestRead(t *testing.T) {
 		scanner := bufio.NewScanner(os.Stdin)
 		done := false
 
+		fmt.Println("Press any key to stop output at any time")
+		time.Sleep(3 * time.Second)
+
 		for !done {
 			// Read from all peripheral
-			fmt.Println("Reading on peripheral 0: ", GetGpioClientInstance().Read())
+			fmt.Println("Readings Collection: ", GetGpioClientInstance().Read())
 
 			// Check if there's input waiting on stdin
 			if scanner.Scan() {
