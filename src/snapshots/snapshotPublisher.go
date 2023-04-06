@@ -1,9 +1,8 @@
 package snapshots
 
 import (
-	"pcs/gpio"
 	"pcs/models"
-	"pcs/pin_reading_conversion"
+	"pcs/pch"
 	"pcs/utils"
 	"sync"
 )
@@ -12,11 +11,10 @@ var snapshotPublisherInstance *SnapshotPublisher
 var snapshotPublisherLock *sync.Mutex = &sync.Mutex{}
 
 type SnapshotPublisher struct {
-	subscribers       []SnapshotSubscriber
-	updater           SnapshotUpdater
-	currentState      models.Snapshot
-	gpioClient        *gpio.GpioClient
-	readingsConverter *pin_reading_conversion.PinReadingsConverter
+	subscribers  []SnapshotSubscriber
+	updater      SnapshotUpdater
+	currentState models.Snapshot
+	pchClient    *pch.PCHClient
 }
 
 func (publisher *SnapshotPublisher) Run() {
@@ -37,10 +35,9 @@ func GetSnapshotPublisherInstance() *SnapshotPublisher {
 
 func newSnapshotPublisher(initParams ...any) *SnapshotPublisher {
 	return &SnapshotPublisher{
-		subscribers:       make([]SnapshotSubscriber, 0),
-		updater:           *GetSnapshotUpdaterInstance(),
-		gpioClient:        gpio.GetGpioClientInstance(),
-		readingsConverter: pin_reading_conversion.GetPinReadingsConverterInstance(),
+		subscribers: make([]SnapshotSubscriber, 0),
+		updater:     *GetSnapshotUpdaterInstance(),
+		pchClient:   pch.GetPCHClientInstance(),
 	}
 }
 
@@ -59,8 +56,7 @@ func (publisher *SnapshotPublisher) notifySubscribers() {
 
 // Update the state of the SnapshotPublisher by reading the GPIO pins
 func (publisher *SnapshotPublisher) updateState() {
-	pinReads := publisher.gpioClient.Read()
-	convertedReads := publisher.readingsConverter.Convert(pinReads)
+	convertedReads := publisher.pchClient.GetReadings()
 	publisher.currentState = publisher.buildSnapshot(convertedReads)
 }
 
