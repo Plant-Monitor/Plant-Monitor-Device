@@ -49,6 +49,8 @@ func setupPCH() {
 	if err != nil {
 		log.Fatalf("failed to open I2C port: %v", err)
 	}
+
+	// todo: setup spi port
 	//defer port.Close()
 }
 
@@ -65,18 +67,16 @@ func (client *PCHClient) GetReadings() models.ConvertedReadingsCollection {
 
 func (client *PCHClient) getRawReadingsCollection() rawReadingsCollection {
 	coll := make(rawReadingsCollection)
-	for sensor, readingStrat := range client.sensorConfig {
-		coll[sensor] = readingStrat()
+	for sensor, driver := range client.sensorConfig {
+		coll[sensor] = driver()
 	}
 
 	return coll
 }
 
-type sensorConfig map[sensor]sensorReadingStrategy
+type sensorConfig map[sensor]sensorDriver
 type rawReadingsCollection map[sensor][]byte
-type sensorReadingStrategy func() []byte
 type metricConfig map[models.Metric]metricConversionStrategy
-type metricConversionStrategy func(collection rawReadingsCollection) models.HealthProperty
 type sensor string
 
 func loadSensorConfig() sensorConfig {
@@ -87,5 +87,6 @@ func loadSensorConfig() sensorConfig {
 func loadMetricConfig() metricConfig {
 	return metricConfig{
 		"temperature": getTemperature,
+		"humidity":    getHumidity,
 	}
 }

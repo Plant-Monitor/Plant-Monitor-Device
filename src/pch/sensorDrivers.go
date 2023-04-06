@@ -7,9 +7,7 @@ import (
 	"time"
 )
 
-//getRawRead_AHTxx sensorReadingStrategy := func() []byte {
-//
-//}
+type sensorDriver func() []byte
 
 const (
 	AHT20_ADDRESS         = 0x38
