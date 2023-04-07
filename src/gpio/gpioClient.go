@@ -6,8 +6,8 @@ import (
 	"github.com/stianeikeland/go-rpio/v4"
 	"log"
 	"os"
-	"pcs/models"
-	"pcs/utils"
+	"gpio/models"
+	"gpio/utils"
 	"sync"
 )
 
