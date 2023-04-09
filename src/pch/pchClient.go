@@ -77,11 +77,9 @@ func setupPCH() {
 	// Configure the trigger pin as an output and the echo pin as an input
 	if err := trigPin.Out(gpio.Low); err != nil {
 		fmt.Println("Failed to configure trigger pin:", err)
-		return
 	}
 	if err := echoPin.In(gpio.PullDown, gpio.NoEdge); err != nil {
 		fmt.Println("Failed to configure echo pin:", err)
-		return
 	}
 }
 
@@ -123,6 +121,7 @@ func loadMetricConfig() metricConfig {
 		"temperature": getTemperature,
 		"humidity":    getHumidity,
 		"moisture":    getMoisture,
-		"water-level": getWaterLevel
+		"water-level": getWaterLevel,
+		"intensity": getLightIntensity,
 	}
 }
