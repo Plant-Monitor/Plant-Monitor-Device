@@ -1,14 +1,17 @@
 package pch
 
 import (
-	"bufio"
+	//"bufio"
 	"fmt"
-	"os"
+	//"os"
 	"testing"
 	"time"
+	//"pcs/actions"
+	//"pcs/models"
+	//"periph.io/x/conn/v3/gpio"
 )
 
-func TestGetReadings(t *testing.T) {
+func TestPumpDriver(t *testing.T) {
 	//setup := func() {
 	//err := godotenv.Load("../.env")
 	//if err != nil {
@@ -19,6 +22,35 @@ func TestGetReadings(t *testing.T) {
 	/*
 		Hardware setup: A peripheral must be on CS0 for this function to work.
 	*/
+	t.Run("Read a specific chip until a key is pressed", func(t *testing.T) {
+		setupPCH()
+		scanner := bufio.NewScanner(os.Stdin)
+		done := false
+
+		fmt.Println("Press any key to stop output at any time")
+		time.Sleep(3 * time.Second)
+
+		for !done {
+		// Read from moisture sensor
+			GetPCHClientInstance().PerformActuations()
+			fmt.Printf("*** MOISTURE WAS REGULATED ***\n")
+		
+		
+			time.Sleep(time.Second)
+			// Check if there's input waiting on stdin
+			if scanner.Scan() {
+				// A key was pressed, so exit the loop
+				done = true
+			}
+		
+	}
+		fmt.Println("Loop exited")
+	})
+}
+
+
+
+func TestGetReadings(t *testing.T){
 	t.Run("Read a specific chip until a key is pressed", func(t *testing.T) {
 		setupPCH()
 		scanner := bufio.NewScanner(os.Stdin)
@@ -47,6 +79,7 @@ func TestGetReadings(t *testing.T) {
 
 		fmt.Println("Loop exited")
 	})
+	
 }
 
 //func TestRead(t *testing.T) {
@@ -57,9 +90,9 @@ func TestGetReadings(t *testing.T) {
 //}
 //}
 
-///*
+
 //Hardware setup: A peripheral must be on CS pins specified in metricPeripheralNumberMapping.json
-//*/
+//
 //t.Run("Read all peripherals repeatedly until a key is pressed", func(t *testing.T) {
 //setup()
 //scanner := bufio.NewScanner(os.Stdin)

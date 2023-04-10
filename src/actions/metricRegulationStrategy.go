@@ -80,12 +80,13 @@ func (strat *neededActionRegulationStrategy) decide(snapshot models.Snapshot) (
 	if strat.checkTimer != nil {
 		select {
 		case <-strat.checkTimer.C:
+			
 			return strat.determineDecision(healthProp)
 		default:
 			return false, NOT_CRITICAL, NEEDED
 		}
 	}
-
+	
 	return strat.determineDecision(healthProp)
 
 }
@@ -108,6 +109,8 @@ func (strat *neededActionRegulationStrategy) determineDecision(healthProp *model
 func (strat *neededActionRegulationStrategy) determineCallback(snapshot models.Snapshot, critRange criticalRange) ActionExecutionCallback {
 	return func() error {
 		strat.checkTimer = time.NewTimer(time.Minute * strat.checkInterval)
+		
 		return nil
 	}
 }
+	
