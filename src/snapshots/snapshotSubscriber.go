@@ -5,6 +5,7 @@ import (
 	"pcs/models"
 	"pcs/utils"
 	"sync"
+	"fmt"
 )
 
 type SnapshotSubscriber interface {
@@ -31,6 +32,7 @@ func GetSnapshotUpdaterInstance() *SnapshotUpdater {
 }
 
 func newSnapshotUpdater(initParams ...any) *SnapshotUpdater {
+	fmt.Printf("[snapshots] Setting update interval to %s\n", initParams[0].(string))
 	updateStrategy := NewPeriodicUpdateStrategy(initParams[0].(string))
 	return &SnapshotUpdater{updateStrategy: updateStrategy}
 }

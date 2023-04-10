@@ -16,10 +16,10 @@ var thresholdMapInstance *MetricAnalysisThresholdMap
 var thresholdMapLock = &sync.Mutex{}
 
 type ThresholdCollection struct {
-	LowerCriticalThreshold float32 `json:"lower_critical_threshold"`
-	UpperCriticalThreshold float32 `json:"upper_critical_threshold"`
-	GoodMinThreshold       float32 `json:"good_min_threshold"`
-	GoodMaxThreshold       float32 `json:"good_max_threshold"`
+	LowerCriticalThreshold float64 `json:"lower_critical_threshold"`
+	UpperCriticalThreshold float64 `json:"upper_critical_threshold"`
+	GoodMinThreshold       float64 `json:"good_min_threshold"`
+	GoodMaxThreshold       float64 `json:"good_max_threshold"`
 }
 
 func GetMetricAnalysisThresholdMapInstance() *MetricAnalysisThresholdMap {

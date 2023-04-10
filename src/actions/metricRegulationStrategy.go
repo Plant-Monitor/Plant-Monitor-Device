@@ -31,7 +31,7 @@ type metricRegulationStrategy struct {
 //}
 
 func (strat *metricRegulationStrategy) Regulate(i IMetricRegulationStrategy, snapshot models.Snapshot) {
-	var levelNeeded float32
+	var levelNeeded float64
 	decision, critRange, actType := i.decide(snapshot)
 	if decision {
 		levelNeeded = strat.determineLevelNeeded(critRange)
@@ -45,7 +45,7 @@ func (strat *metricRegulationStrategy) Regulate(i IMetricRegulationStrategy, sna
 	}
 }
 
-func (strat *metricRegulationStrategy) determineLevelNeeded(critRange criticalRange) float32 {
+func (strat *metricRegulationStrategy) determineLevelNeeded(critRange criticalRange) float64 {
 	switch critRange {
 	case CRITICAL_LOW:
 		return config.GetThresholdCollection(strat.metric).GoodMinThreshold

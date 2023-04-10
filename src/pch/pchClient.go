@@ -11,6 +11,7 @@ import (
 	"periph.io/x/conn/v3/i2c/i2creg"
 	"periph.io/x/conn/v3/spi"
 	"periph.io/x/conn/v3/spi/spireg"
+	"periph.io/x/conn/v3/physic"
 	"periph.io/x/host/v3"
 	"sync"
 )
@@ -18,7 +19,7 @@ import (
 var (
 	i2cport i2c.BusCloser
 	spiport spi.PortCloser
-
+	spiDev spi.Conn
 	trigPin gpio.PinIO
 	echoPin gpio.PinIO
 )
@@ -64,6 +65,11 @@ func setupPCH() {
 	if err != nil {
 		log.Fatalf("failed to open SPI port: %v", err)
 	}
+	// Connect to the MCP3008 ADC using the SPI parameters
+	spiDev, err = spiport.Connect(1*physic.MegaHertz, spi.Mode0, 8)
+	if err != nil {
+		log.Fatalf("failed to connect to device: %v", err)
+	}
 	//defer port.Close()
 
 	//open and configure pins for ultrasonic sensor
@@ -105,7 +111,7 @@ func (client *PCHClient) getRawReadingsCollection() rawReadingsCollection {
 }
 
 type sensorConfig map[sensor]sensorDriver
-type rawReadingsCollection map[sensor]interface{}
+type rawReadingsCollection map[sensor][]byte
 type metricConfig map[models.Metric]metricConversionStrategy
 type sensor string
 
@@ -122,7 +128,7 @@ func loadMetricConfig() metricConfig {
 		"temperature": getTemperature,
 		"humidity":    getHumidity,
 		"moisture":    getMoisture,
-		"water-level": getWaterLevel,
-		"intensity":   getLightIntensity,
+		"water level": getWaterLevel,
+		"light intensity":   getLightIntensity,
 	}
 }

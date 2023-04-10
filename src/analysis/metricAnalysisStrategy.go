@@ -3,10 +3,11 @@ package analysis
 import (
 	config "pcs/config/metric"
 	"pcs/models"
+	"fmt"
 )
 
 type IMetricAnalysisStrategy interface {
-	analyze(level float32) models.Interpretation
+	analyze(level float64) models.Interpretation
 	Interpret(i IMetricAnalysisStrategy, snapshot models.Snapshot) models.Interpretation
 }
 
@@ -15,6 +16,7 @@ type metricAnalysisStrategy struct {
 }
 
 func (strat *metricAnalysisStrategy) Interpret(i IMetricAnalysisStrategy, snapshot models.Snapshot) models.Interpretation {
+	fmt.Printf("[Analysis] Interpreting %s\n", strat.metric)
 	healthProp := snapshot.HealthProperties[strat.metric]
 	interpretation := i.analyze(healthProp.Level)
 	healthProp.Interpretation = interpretation
@@ -31,7 +33,7 @@ func NewThresholdAnalysisStrategy(metric models.Metric) *ThresholdAnalysisStrate
 	}
 }
 
-func (strat *ThresholdAnalysisStrategy) analyze(level float32) models.Interpretation {
+func (strat *ThresholdAnalysisStrategy) analyze(level float64) models.Interpretation {
 	threshCollection := config.GetThresholdCollection(strat.metric)
 
 	switch {

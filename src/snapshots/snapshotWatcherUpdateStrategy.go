@@ -6,6 +6,7 @@ import (
 	"pcs/models"
 	"pcs/utils"
 	"time"
+	"fmt"
 )
 
 type SnapshotWatcherUpdateStrategy interface {
@@ -30,6 +31,7 @@ func NewPeriodicUpdateStrategy(updateInterval string) *PeriodicUpdateStrategy {
 
 func (perUpdateStrategy *PeriodicUpdateStrategy) update(snapshot *models.Snapshot) (didUpdate bool) {
 	if perUpdateStrategy.lastUpdate == nil || snapshot.Timestamp.Sub(*perUpdateStrategy.lastUpdate) >= perUpdateStrategy.updateInterval {
+		fmt.Println("[snapshots] Writing to server\n\n\n\n\n\n\n\n\n\n\n\n\n")
 		_, err := perUpdateStrategy.serverClient.WriteSnapshot(snapshot)
 		if err != nil {
 			return false
@@ -38,6 +40,7 @@ func (perUpdateStrategy *PeriodicUpdateStrategy) update(snapshot *models.Snapsho
 		perUpdateStrategy.lastUpdate = &timeNow
 		return true
 	}
+	fmt.Println("[snapshots] Not writing to the server yet")
 	return false
 }
 

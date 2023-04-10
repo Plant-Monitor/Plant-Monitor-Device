@@ -6,6 +6,7 @@ import (
 	"pcs/pch"
 	"pcs/utils"
 	"sync"
+	"fmt"
 )
 
 var snapshotPublisherInstance *SnapshotPublisher
@@ -19,9 +20,11 @@ type SnapshotPublisher struct {
 }
 
 func (publisher *SnapshotPublisher) Run() {
+	publisher.setup()
 	for {
 		publisher.updateState()
 		publisher.notifySubscribers()
+		fmt.Println("Snapshot has been published!")
 	}
 }
 
@@ -44,13 +47,13 @@ func (publisher *SnapshotPublisher) loadSubscribers() {
 
 	lightSub := MetricSubscriber{
 		updateStrategy: MetricSubscriberUpdateStrategy{
-			analysisStrategy: analysis.NewThresholdAnalysisStrategy("light"),
+			analysisStrategy: analysis.NewThresholdAnalysisStrategy("light intensity"),
 		},
 	}
 
 	tankLevelSub := MetricSubscriber{
 		updateStrategy: MetricSubscriberUpdateStrategy{
-			analysisStrategy: analysis.NewThresholdAnalysisStrategy("tank level"),
+			analysisStrategy: analysis.NewThresholdAnalysisStrategy("water level"),
 		},
 	}
 
@@ -91,6 +94,7 @@ func (publisher *SnapshotPublisher) Subscribe(sub SnapshotSubscriber) {
 
 // Notify the subscribers of the most current Snapshot stored in the publisher
 func (publisher *SnapshotPublisher) notifySubscribers() {
+	fmt.Println("[SnapshotPublisher] Notifying subscribers")
 	for _, sub := range publisher.subscribers {
 		sub.update(publisher.currentState)
 	}
@@ -99,11 +103,15 @@ func (publisher *SnapshotPublisher) notifySubscribers() {
 
 // Update the state of the SnapshotPublisher by reading the GPIO pins
 func (publisher *SnapshotPublisher) updateState() {
+	fmt.Println("[SnapshotPublisher] Updating current snapshot")
 	convertedReads := publisher.pchClient.GetReadings()
 	publisher.currentState = publisher.buildSnapshot(convertedReads)
+	
+	fmt.Printf("[SnapshotPublisher] Built snapshot %+v\n", publisher.currentState)
 }
 
 // Build snapshot from the provided readings collection
 func (publisher *SnapshotPublisher) buildSnapshot(readings models.ConvertedReadingsCollection) *models.Snapshot {
+	fmt.Println("[SnapshotPublisher] Building snapshot")
 	return models.BuildSnapshot(readings)
 }

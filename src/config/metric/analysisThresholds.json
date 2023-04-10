@@ -1,33 +1,33 @@
 {
   "moisture": {
-    "lower_critical_threshold": 5,
-    "good_min_threshold": 10,
-    "good_max_threshold": 15,
-    "upper_critical_threshold": 20
+    "lower_critical_threshold": 10.0,
+    "good_min_threshold": 30.0,
+    "good_max_threshold": 50.0,
+    "upper_critical_threshold": 80.0
   },
   "temperature": {
+    "lower_critical_threshold": 20.0,
+    "good_min_threshold": 25.0,
+    "good_max_threshold": 28.0,
+    "upper_critical_threshold": 35.0
+  },
+  "humidity": {
+    "lower_critical_threshold": 20.0,
+    "good_min_threshold": 45.0,
+    "good_max_threshold": 65.0,
+    "upper_critical_threshold": 80.0
+  },
+  "water level": {
     "lower_critical_threshold": 5,
     "good_min_threshold": 10,
     "good_max_threshold": 15,
     "upper_critical_threshold": 20
   },
-  "soil_health": {
-    "lower_critical_threshold": 5,
-    "good_min_threshold": 10,
-    "good_max_threshold": 15,
-    "upper_critical_threshold": 20
-  },
-  "tank_level": {
-    "lower_critical_threshold": 5,
-    "good_min_threshold": 10,
-    "good_max_threshold": 15,
-    "upper_critical_threshold": 20
-  },
-  "light": {
-    "lower_critical_threshold": 5,
-    "good_min_threshold": 10,
-    "good_max_threshold": 15,
-    "upper_critical_threshold": 20
+  "light intensity": {
+    "lower_critical_threshold": 270,
+    "good_min_threshold": 807,
+    "good_max_threshold": 1614,
+    "upper_critical_threshold": 11000
   },
   "testMetric": {
     "lower_critical_threshold": 5,

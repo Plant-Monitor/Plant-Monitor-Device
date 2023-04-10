@@ -13,7 +13,7 @@ type Action struct {
 	Type            actionType       `json:"action_type"`
 	Status          actionStatus     `json:"status"`
 	Metric          models.Metric    `json:"metric"`
-	LevelNeeded     float32          `json:"level_needed"`
+	LevelNeeded     float64          `json:"level_needed"`
 	CurrentSnapshot *models.Snapshot `json:"current_snapshot"`
 	CriticalRange   criticalRange    `json:"critical_range"`
 
@@ -43,7 +43,7 @@ const (
 
 func newAction(
 	actType actionType,
-	levelNeeded float32,
+	levelNeeded float64,
 	metric models.Metric,
 	snapshot *models.Snapshot,
 	executionCallback ActionExecutionCallback,

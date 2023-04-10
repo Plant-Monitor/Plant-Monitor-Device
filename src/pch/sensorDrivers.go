@@ -6,8 +6,8 @@ import (
 	"log"
 	"periph.io/x/conn/v3/gpio"
 	"periph.io/x/conn/v3/i2c"
-	"periph.io/x/conn/v3/physic"
-	"periph.io/x/conn/v3/spi"
+	//"periph.io/x/conn/v3/physic"
+	//"periph.io/x/conn/v3/spi"
 	"time"
 )
 
@@ -57,9 +57,9 @@ func getRawRead_AHTxx() []byte {
 
 	// Trigger a measurement by sending the command 0xAC
 	data := make([]byte, 6)
-	binary.BigEndian.PutUint32(data[0:3], AHT20_MEASUREMENT_CMD)
+	binary.BigEndian.PutUint32(data[0:4], AHT20_MEASUREMENT_CMD)
 
-	if _, err := dev.Write(data[0:3]); err != nil {
+	if _, err := dev.Write(data[0:4]); err != nil {
 		log.Fatalf("failed to send command: %v", err)
 	}
 
@@ -75,12 +75,6 @@ func getRawRead_AHTxx() []byte {
 }
 
 func getRawRead_MCP3008() []byte {
-	// Connect to the MCP3008 ADC using the SPI parameters
-	dev, err := spiport.Connect(1*physic.MegaHertz, spi.Mode0, 8)
-	if err != nil {
-		log.Fatalf("failed to connect to device: %v", err)
-	}
-
 	// Send the command to read the analog input from the specified channel
 	tx := []byte{
 		0x01,                      // Start bit
@@ -88,7 +82,7 @@ func getRawRead_MCP3008() []byte {
 		0x00,                      // Placeholder byte for data
 	}
 	rx := make([]byte, 3) // Response buffer for 3 bytes of data
-	if err := dev.Tx(tx, rx); err != nil {
+	if err := spiDev.Tx(tx, rx); err != nil {
 		log.Fatalf("failed to send SPI command: %v", err)
 	}
 
@@ -126,9 +120,9 @@ func getRawRead_HCSR04() []byte {
 	}
 
 	duration := time.Since(startTime)
-	data := make([]byte, 1)
+	data := make([]byte, 8)
 	//todo: convert duration to byte
-	data[0] = byte(duration)
+	binary.BigEndian.PutUint64(data, uint64(duration))
 	return data
 }
 

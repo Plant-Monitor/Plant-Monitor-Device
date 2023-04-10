@@ -30,9 +30,14 @@ func TestGetReadings(t *testing.T) {
 		for !done {
 			// Read from moisture sensor
 			readings := GetPCHClientInstance().GetReadings()
-			moisture := readings["moisture"]
-			fmt.Println("Reading on peripheral 0: ", moisture.Level, moisture.Unit)
-
+			for metric, reading := range readings{
+				fmt.Printf("%s: %.2f %s \n",metric, reading.Level, reading.Unit)
+				//fmt.Printf("\n")
+			}
+			//fmt.Printf("Readings: %+v\n", readings)
+			//fmt.Println("Reading on peripheral 0: ", moisture.Level, moisture.Unit)
+			fmt.Printf("*******\n")
+			time.Sleep(time.Second)
 			// Check if there's input waiting on stdin
 			if scanner.Scan() {
 				// A key was pressed, so exit the loop
