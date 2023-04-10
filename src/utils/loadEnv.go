@@ -2,18 +2,16 @@ package utils
 
 import (
 	"fmt"
-	"log"
-	"os"
-
 	"github.com/joho/godotenv"
+	"log"
 )
 
 func LoadEnv() {
 	envFilename := ".env"
 
-	if len(os.Args) > 1 {
-		envFilename = fmt.Sprintf(".env.%s", os.Args[len(os.Args)-1])
-	}
+	//if len(os.Args) > 1 {
+	//	envFilename = fmt.Sprintf(".env.%s", os.Args[len(os.Args)-1])
+	//}
 
 	err := godotenv.Load(fmt.Sprintf("../../%s", envFilename))
 	if err != nil {

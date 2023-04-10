@@ -13,7 +13,7 @@ var snapshotPublisherLock *sync.Mutex = &sync.Mutex{}
 type SnapshotPublisher struct {
 	subscribers  []SnapshotSubscriber
 	updater      SnapshotUpdater
-	currentState models.Snapshot
+	currentState *models.Snapshot
 	pchClient    *pch.PCHClient
 }
 
@@ -41,7 +41,7 @@ func newSnapshotPublisher(initParams ...any) *SnapshotPublisher {
 	}
 }
 
-// Add a subscriber to the publisher
+// Subscribe Add a subscriber to the publisher
 func (publisher *SnapshotPublisher) Subscribe(sub SnapshotSubscriber) {
 	publisher.subscribers = append(publisher.subscribers, sub)
 }
@@ -61,6 +61,6 @@ func (publisher *SnapshotPublisher) updateState() {
 }
 
 // Build snapshot from the provided readings collection
-func (publisher *SnapshotPublisher) buildSnapshot(readings models.ConvertedReadingsCollection) models.Snapshot {
-	return *models.BuildSnapshot(readings)
+func (publisher *SnapshotPublisher) buildSnapshot(readings models.ConvertedReadingsCollection) *models.Snapshot {
+	return models.BuildSnapshot(readings)
 }

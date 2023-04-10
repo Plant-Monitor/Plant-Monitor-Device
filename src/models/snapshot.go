@@ -8,13 +8,13 @@ import (
 )
 
 type Snapshot struct {
-	User_id           uuid.UUID                   `json:"user_id"`
-	Plant_id          uuid.UUID                   `json:"plant_id"`
-	Timestamp         time.Time                   `json:"timestamp"`
-	Health_properties ConvertedReadingsCollection `json:"health_properties"`
+	UserId           uuid.UUID                   `json:"user_id"`
+	PlantId          uuid.UUID                   `json:"plant_id"`
+	Timestamp        time.Time                   `json:"timestamp"`
+	HealthProperties ConvertedReadingsCollection `json:"health_properties"`
 }
 
-type ConvertedReadingsCollection map[Metric]HealthProperty
+type ConvertedReadingsCollection map[Metric]*HealthProperty
 
 type Metric string
 
@@ -24,15 +24,21 @@ type HealthProperty struct {
 	Interpretation Interpretation `json:"interpretation"`
 }
 
-type Interpretation int64
+type Interpretation int8
+
+const (
+	GOOD Interpretation = iota
+	OKAY
+	CRITICAL
+)
 
 func BuildSnapshot(readings ConvertedReadingsCollection) *Snapshot {
-	user_id, _ := uuid.Parse(os.Getenv("USER_ID"))
-	plant_id, _ := uuid.Parse(os.Getenv("PLANT_ID"))
+	userId, _ := uuid.Parse(os.Getenv("USER_ID"))
+	plantId, _ := uuid.Parse(os.Getenv("PLANT_ID"))
 
 	return &Snapshot{
-		user_id,
-		plant_id,
+		userId,
+		plantId,
 		time.Now(),
 		readings,
 	}
