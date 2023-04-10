@@ -1,12 +1,12 @@
 package snapshots
 
 import (
+	"fmt"
 	"pcs/actions"
 	"pcs/analysis"
 	"pcs/models"
 	"pcs/utils"
 	"time"
-	"fmt"
 )
 
 type SnapshotWatcherUpdateStrategy interface {
@@ -58,7 +58,7 @@ func newMetricSubscriberUpdateStrategy(
 
 func (strat *MetricSubscriberUpdateStrategy) update(snapshot *models.Snapshot) bool {
 	strat.analysisStrategy.Interpret(strat.analysisStrategy, *snapshot)
-	//strat.regulationStrategy.Regulate(*snapshot)
+	strat.regulationStrategy.Regulate(strat.regulationStrategy, *snapshot)
 
 	return false
 }
