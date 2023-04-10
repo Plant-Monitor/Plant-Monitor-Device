@@ -32,7 +32,7 @@ func NewThresholdAnalysisStrategy(metric models.Metric) *ThresholdAnalysisStrate
 }
 
 func (strat *ThresholdAnalysisStrategy) analyze(level float32) models.Interpretation {
-	threshCollection := (*config.GetMetricAnalysisThresholdMapInstance())[strat.metric]
+	threshCollection := config.GetThresholdCollection(strat.metric)
 
 	switch {
 	case level <= threshCollection.LowerCriticalThreshold || level >= threshCollection.UpperCriticalThreshold:

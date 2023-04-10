@@ -4,10 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
-	"pcs/models"
-	"pcs/models/dto"
 	"sync"
 )
 
@@ -38,38 +37,39 @@ func GetServerClientInstance() *ServerClient {
 	)
 }
 
-func (client *ServerClient) WriteSnapshot(snapshot *models.Snapshot) (statusCode int, err error) {
-	snapshotJSON, _ := json.Marshal(snapshot)
-	requestBody := bytes.NewBuffer(snapshotJSON)
-
-	resp, err := http.Post(
-		string(fmt.Sprintf("%s/snapshots", client.hostUri)),
-		"application/json",
-		requestBody,
+func (client *ServerClient) WriteSnapshot(snapshot interface{}) (statusCode int, err error) {
+	return client.write(
+		snapshot,
+		fmt.Sprintf("%s/snapshots", client.hostUri),
 	)
-	if err != nil {
-		return 0, err
-	}
-	defer resp.Body.Close()
-
-	statusCode = resp.StatusCode
-
-	return statusCode, err
 }
 
-func (client *ServerClient) WriteAction(dto dto.ActionDto) (statusCode int, err error) {
+func (client *ServerClient) CreateAction(action interface{}) error {
+	_, err := client.write(
+		action,
+		fmt.Sprintf("%s/actions/create", client.hostUri),
+	)
+	return err
+}
+
+func (client *ServerClient) write(dto interface{}, endpoint string) (statusCode int, err error) {
 	snapshotJSON, _ := json.Marshal(dto)
 	requestBody := bytes.NewBuffer(snapshotJSON)
 
 	resp, err := http.Post(
-		string(fmt.Sprintf("%s/actions/create", client.hostUri)),
+		endpoint,
 		"application/json",
 		requestBody,
 	)
 	if err != nil {
 		return 0, err
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(resp.Body)
 
 	statusCode = resp.StatusCode
 
