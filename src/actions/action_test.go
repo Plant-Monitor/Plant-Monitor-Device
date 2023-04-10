@@ -64,7 +64,7 @@ func TestActions(t *testing.T) {
 		)
 
 		fmt.Printf("Generated action id: %s\n", actionId)
-		storedAction := getActionsStoreInstance().get(actionId)
+		storedAction := GetActionsStoreInstance().get(actionId)
 		assert.NotNil(t, storedAction)
 		assert.Equal(t, storedAction.ActionID, actionId)
 	})

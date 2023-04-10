@@ -1,12 +1,13 @@
 package snapshots
 
 import (
+	"fmt"
+	"pcs/actions"
 	"pcs/analysis"
 	"pcs/models"
 	"pcs/pch"
 	"pcs/utils"
 	"sync"
-	"fmt"
 )
 
 var snapshotPublisherInstance *SnapshotPublisher
@@ -24,7 +25,10 @@ func (publisher *SnapshotPublisher) Run() {
 	for {
 		publisher.updateState()
 		publisher.notifySubscribers()
-		fmt.Println("Snapshot has been published!")
+		fmt.Println("[SnapshotPublisher] Snapshot has been published!")
+
+		publisher.runActionsStore()
+		fmt.Println("[SnapshotPublisher] Actions store has been ran")
 	}
 }
 
@@ -106,7 +110,7 @@ func (publisher *SnapshotPublisher) updateState() {
 	fmt.Println("[SnapshotPublisher] Updating current snapshot")
 	convertedReads := publisher.pchClient.GetReadings()
 	publisher.currentState = publisher.buildSnapshot(convertedReads)
-	
+
 	fmt.Printf("[SnapshotPublisher] Built snapshot %+v\n", publisher.currentState)
 }
 
@@ -114,4 +118,13 @@ func (publisher *SnapshotPublisher) updateState() {
 func (publisher *SnapshotPublisher) buildSnapshot(readings models.ConvertedReadingsCollection) *models.Snapshot {
 	fmt.Println("[SnapshotPublisher] Building snapshot")
 	return models.BuildSnapshot(readings)
+}
+
+// Wrapper for ActionsStore.execute
+func (publisher *SnapshotPublisher) runActionsStore() {
+	err := actions.GetActionsStoreInstance().Execute()
+	if err != nil {
+		fmt.Printf("Error occured during actions execution %s\n", err)
+		return
+	}
 }
