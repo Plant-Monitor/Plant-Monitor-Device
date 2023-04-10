@@ -1,13 +1,15 @@
 package actions
 
 import (
+	"github.com/google/uuid"
 	config "pcs/config/metric"
 	"pcs/models"
+	"pcs/models/dto"
+	"pcs/utils"
 	"time"
 )
 
 type IMetricRegulationStrategy interface {
-	dispatchAction(actType actionType)
 	decide(snapshot models.Snapshot) (
 		decision bool,
 		critRange criticalRange,
@@ -15,34 +17,63 @@ type IMetricRegulationStrategy interface {
 	)
 	Regulate(i IMetricRegulationStrategy, snapshot models.Snapshot)
 	determineCallback(snapshot models.Snapshot, critRange criticalRange) ActionExecutionCallback
+	determineResolution(snapshot models.Snapshot) bool
+	isTimerExpired() bool
 }
 
 type metricRegulationStrategy struct {
 	//iMetricRegulationStrategy
-	metric models.Metric
+	metric         models.Metric
+	checkInterval  time.Duration // expressed in hours
+	checkTimer     *time.Timer
+	activeActionId uuid.UUID
+	pendingAction  bool
 }
 
-// Probably subject to overriding or template method
-//func (strat *metricRegulationStrategy) dispatchAction(
-//	actType actionType,
-//	critRange criticalRange,
-//) {
-//	newAction()
-//}
-
 func (strat *metricRegulationStrategy) Regulate(i IMetricRegulationStrategy, snapshot models.Snapshot) {
-	var levelNeeded float64
+	if strat.determineResolution(snapshot) {
+		return
+	}
+
 	decision, critRange, actType := i.decide(snapshot)
 	if decision {
-		levelNeeded = strat.determineLevelNeeded(critRange)
-		newAction(
+		levelNeeded := strat.determineLevelNeeded(critRange)
+		strat.activeActionId = newAction(
 			actType,
 			levelNeeded,
 			strat.metric,
 			&snapshot,
 			i.determineCallback(snapshot, critRange),
 		)
+		strat.pendingAction = true
 	}
+}
+
+func (strat *metricRegulationStrategy) determineResolution(snapshot models.Snapshot) bool {
+	interpretation := snapshot.HealthProperties[strat.metric].Interpretation
+	if strat.activeActionId != uuid.Nil && interpretation == models.GOOD {
+		strat.resolveActiveAction(snapshot)
+		return true
+	}
+	return false
+}
+
+func (strat *metricRegulationStrategy) resolveActiveAction(snapshot models.Snapshot) {
+	err := utils.GetServerClientInstance().ResolveAction(
+		dto.CreateResolveActionDto(
+			strat.activeActionId,
+			snapshot,
+		),
+	)
+	if err != nil {
+		return
+	}
+	strat.resetRegulation()
+}
+
+func (strat *metricRegulationStrategy) resetRegulation() {
+	strat.activeActionId = uuid.Nil
+	strat.checkTimer = nil
 }
 
 func (strat *metricRegulationStrategy) determineLevelNeeded(critRange criticalRange) float64 {
@@ -58,16 +89,17 @@ func (strat *metricRegulationStrategy) determineLevelNeeded(critRange criticalRa
 
 type neededActionRegulationStrategy struct {
 	metricRegulationStrategy
-	checkInterval time.Duration // expressed in hours
-	checkTimer    *time.Timer
 }
 
 func newNeededActionRegulationStrategy(metric models.Metric, checkInterval time.Duration) *neededActionRegulationStrategy {
 	return &neededActionRegulationStrategy{
 		metricRegulationStrategy: metricRegulationStrategy{
-			metric: metric,
+			metric:         metric,
+			checkInterval:  checkInterval,
+			checkTimer:     nil,
+			activeActionId: uuid.Nil,
+			pendingAction:  false,
 		},
-		checkInterval: checkInterval,
 	}
 }
 
@@ -77,17 +109,27 @@ func (strat *neededActionRegulationStrategy) decide(snapshot models.Snapshot) (
 	actType actionType,
 ) {
 	healthProp := snapshot.HealthProperties[strat.metric]
-	if strat.checkTimer != nil {
-		select {
-		case <-strat.checkTimer.C:
-			return strat.determineDecision(healthProp)
-		default:
-			return false, NOT_CRITICAL, NEEDED
-		}
+	if strat.isTimerExpired() && !strat.pendingAction {
+		return strat.determineDecision(healthProp)
 	}
+	return false, NOT_CRITICAL, NEEDED
 
-	return strat.determineDecision(healthProp)
+}
 
+func (strat *metricRegulationStrategy) isTimerExpired() bool {
+	if strat.checkTimer == nil {
+		return true
+	}
+	select {
+	case <-strat.checkTimer.C:
+		return true
+	default:
+		return false
+	}
+}
+
+func (strat *metricRegulationStrategy) startTimer() {
+	strat.checkTimer = time.NewTimer(time.Minute * strat.checkInterval)
 }
 
 func (strat *neededActionRegulationStrategy) determineDecision(healthProp *models.HealthProperty) (
@@ -107,7 +149,8 @@ func (strat *neededActionRegulationStrategy) determineDecision(healthProp *model
 
 func (strat *neededActionRegulationStrategy) determineCallback(snapshot models.Snapshot, critRange criticalRange) ActionExecutionCallback {
 	return func() error {
-		strat.checkTimer = time.NewTimer(time.Minute * strat.checkInterval)
+		strat.startTimer()
+		strat.pendingAction = false
 		return nil
 	}
 }
