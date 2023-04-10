@@ -1,6 +1,7 @@
 package snapshots
 
 import (
+	"pcs/analysis"
 	"pcs/models"
 	"pcs/pch"
 	"pcs/utils"
@@ -22,6 +23,48 @@ func (publisher *SnapshotPublisher) Run() {
 		publisher.updateState()
 		publisher.notifySubscribers()
 	}
+}
+
+func (publisher *SnapshotPublisher) setup() {
+	publisher.loadSubscribers()
+}
+
+func (publisher *SnapshotPublisher) loadSubscribers() {
+	tempSub := MetricSubscriber{
+		updateStrategy: MetricSubscriberUpdateStrategy{
+			analysisStrategy: analysis.NewThresholdAnalysisStrategy("temperature"),
+		},
+	}
+
+	moistureSub := MetricSubscriber{
+		updateStrategy: MetricSubscriberUpdateStrategy{
+			analysisStrategy: analysis.NewThresholdAnalysisStrategy("moisture"),
+		},
+	}
+
+	lightSub := MetricSubscriber{
+		updateStrategy: MetricSubscriberUpdateStrategy{
+			analysisStrategy: analysis.NewThresholdAnalysisStrategy("light"),
+		},
+	}
+
+	tankLevelSub := MetricSubscriber{
+		updateStrategy: MetricSubscriberUpdateStrategy{
+			analysisStrategy: analysis.NewThresholdAnalysisStrategy("tank level"),
+		},
+	}
+
+	humiditySub := MetricSubscriber{
+		updateStrategy: MetricSubscriberUpdateStrategy{
+			analysisStrategy: analysis.NewThresholdAnalysisStrategy("humidity"),
+		},
+	}
+
+	publisher.Subscribe(&tempSub)
+	publisher.Subscribe(&moistureSub)
+	publisher.Subscribe(&lightSub)
+	publisher.Subscribe(&tankLevelSub)
+	publisher.Subscribe(&humiditySub)
 }
 
 func GetSnapshotPublisherInstance() *SnapshotPublisher {

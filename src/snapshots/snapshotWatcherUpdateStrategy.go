@@ -46,7 +46,7 @@ type MetricSubscriberUpdateStrategy struct {
 	regulationStrategy actions.IMetricRegulationStrategy
 }
 
-func (strat *MetricSubscriberUpdateStrategy) create(
+func newMetricSubscriberUpdateStrategy(
 	analysisStrat analysis.IMetricAnalysisStrategy,
 	regulationStrat actions.IMetricRegulationStrategy,
 ) *MetricSubscriberUpdateStrategy {

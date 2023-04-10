@@ -8,7 +8,7 @@ import (
 )
 
 type SnapshotSubscriber interface {
-	update(*models.Snapshot)
+	update(snapshot *models.Snapshot)
 }
 
 // Implements SnapshotSubscriber. Role is to update DB after a configured timelapse
@@ -41,4 +41,12 @@ func (snapshotUpdater *SnapshotUpdater) update(snapshot *models.Snapshot) {
 
 type MetricSubscriber struct {
 	updateStrategy MetricSubscriberUpdateStrategy
+}
+
+func newMetricSubscriber(metric models.Metric) *MetricSubscriber {
+	return &MetricSubscriber{}
+}
+
+func (sub *MetricSubscriber) update(snapshot *models.Snapshot) {
+	sub.updateStrategy.update(snapshot)
 }

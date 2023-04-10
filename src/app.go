@@ -27,7 +27,3 @@ func (app *app) loadEnv() {
 		log.Println("No .env file found")
 	}
 }
-
-func (app *app) loadSubscribers() {
-
-}
