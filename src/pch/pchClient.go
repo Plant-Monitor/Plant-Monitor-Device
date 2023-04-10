@@ -131,11 +131,16 @@ func (client *PCHClient) PerformActuations() {
 	}
 }
 
+func (client *PCHClient) Actuate(metric models.Metric) {
+	client.actuatorConfig[actuator(string(metric))]()
+}
+
 type sensorConfig map[sensor]sensorDriver
-type actuatorConfig map[sensor]actuatorDriver
+type actuatorConfig map[actuator]actuatorDriver
 type rawReadingsCollection map[sensor][]byte
 type metricConfig map[models.Metric]metricConversionStrategy
 type sensor string
+type actuator string
 
 func loadSensorConfig() sensorConfig {
 	return sensorConfig{

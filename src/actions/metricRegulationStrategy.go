@@ -5,6 +5,7 @@ import (
 	config "pcs/config/metric"
 	"pcs/models"
 	"pcs/models/dto"
+	"pcs/pch"
 	"pcs/utils"
 	"time"
 )
@@ -16,7 +17,7 @@ type IMetricRegulationStrategy interface {
 		actType actionType,
 	)
 	Regulate(i IMetricRegulationStrategy, snapshot models.Snapshot)
-	determineCallback(snapshot models.Snapshot, critRange criticalRange) ActionExecutionCallback
+	determineCallback(snapshot models.Snapshot, critRange criticalRange, actType actionType) ActionExecutionCallback
 	determineResolution(snapshot models.Snapshot) bool
 	isTimerExpired() bool
 }
@@ -43,7 +44,7 @@ func (strat *metricRegulationStrategy) Regulate(i IMetricRegulationStrategy, sna
 			levelNeeded,
 			strat.metric,
 			&snapshot,
-			i.determineCallback(snapshot, critRange),
+			i.determineCallback(snapshot, critRange, actType),
 		)
 		strat.pendingAction = true
 	}
@@ -91,7 +92,7 @@ type neededActionRegulationStrategy struct {
 	metricRegulationStrategy
 }
 
-func newNeededActionRegulationStrategy(metric models.Metric, checkInterval time.Duration) *neededActionRegulationStrategy {
+func NewNeededActionRegulationStrategy(metric models.Metric, checkInterval time.Duration) *neededActionRegulationStrategy {
 	return &neededActionRegulationStrategy{
 		metricRegulationStrategy: metricRegulationStrategy{
 			metric:         metric,
@@ -147,7 +148,59 @@ func (strat *neededActionRegulationStrategy) determineDecision(healthProp *model
 	return false, NOT_CRITICAL, NEEDED
 }
 
-func (strat *neededActionRegulationStrategy) determineCallback(snapshot models.Snapshot, critRange criticalRange) ActionExecutionCallback {
+func (strat *neededActionRegulationStrategy) determineCallback(snapshot models.Snapshot, critRange criticalRange, actType actionType) ActionExecutionCallback {
+	return makeNeededActionCallback(&strat.metricRegulationStrategy)
+}
+
+type moistureRegulationStrategy struct {
+	metricRegulationStrategy
+}
+
+func NewMoistureRegulationStrategy(checkInterval time.Duration) *moistureRegulationStrategy {
+	return &moistureRegulationStrategy{
+		metricRegulationStrategy: metricRegulationStrategy{
+			metric:         "moisture",
+			checkInterval:  checkInterval,
+			checkTimer:     nil,
+			activeActionId: uuid.Nil,
+			pendingAction:  false,
+		},
+	}
+}
+
+func (strat *moistureRegulationStrategy) determineDecision(healthProp *models.HealthProperty) (
+	decision bool,
+	critRange criticalRange,
+	actType actionType,
+) {
+	if healthProp.Interpretation == models.CRITICAL {
+		if healthProp.Level <= config.GetThresholdCollection(strat.metric).LowerCriticalThreshold {
+			return true, CRITICAL_LOW, TAKEN
+		}
+		return true, CRITICAL_HIGH, NEEDED
+	}
+
+	return false, NOT_CRITICAL, NEEDED
+}
+
+func (strat *moistureRegulationStrategy) determineCallback(snapshot models.Snapshot, critRange criticalRange, actType actionType) ActionExecutionCallback {
+	switch actType {
+	case NEEDED:
+		return makeNeededActionCallback(&strat.metricRegulationStrategy)
+	case TAKEN:
+		return func() error {
+			err := makeNeededActionCallback(&strat.metricRegulationStrategy)()
+			if err != nil {
+				return err
+			}
+			pch.GetPCHClientInstance().Actuate(strat.metricRegulationStrategy.metric)
+			return nil
+		}
+	}
+	return nil
+}
+
+func makeNeededActionCallback(strat *metricRegulationStrategy) ActionExecutionCallback {
 	return func() error {
 		strat.startTimer()
 		strat.pendingAction = false
