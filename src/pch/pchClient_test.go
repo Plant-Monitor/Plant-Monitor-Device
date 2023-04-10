@@ -1,6 +1,7 @@
 package pch
 
 import (
+<<<<<<< HEAD
 	//"bufio"
 	"fmt"
 	//"os"
@@ -12,6 +13,16 @@ import (
 )
 
 func TestPumpDriver(t *testing.T) {
+=======
+	"bufio"
+	"fmt"
+	"os"
+	"testing"
+	"time"
+)
+
+func TestGetReadings(t *testing.T) {
+>>>>>>> beddb5414abaccd00fce4616dbdb37c636e69636
 	//setup := func() {
 	//err := godotenv.Load("../.env")
 	//if err != nil {
@@ -31,6 +42,7 @@ func TestPumpDriver(t *testing.T) {
 		time.Sleep(3 * time.Second)
 
 		for !done {
+<<<<<<< HEAD
 		// Read from moisture sensor
 			GetPCHClientInstance().PerformActuations()
 			fmt.Printf("*** MOISTURE WAS REGULATED ***\n")
@@ -60,6 +72,8 @@ func TestGetReadings(t *testing.T){
 		time.Sleep(3 * time.Second)
 
 		for !done {
+=======
+>>>>>>> beddb5414abaccd00fce4616dbdb37c636e69636
 			// Read from moisture sensor
 			readings := GetPCHClientInstance().GetReadings()
 			for metric, reading := range readings{
@@ -79,7 +93,10 @@ func TestGetReadings(t *testing.T){
 
 		fmt.Println("Loop exited")
 	})
+<<<<<<< HEAD
 	
+=======
+>>>>>>> beddb5414abaccd00fce4616dbdb37c636e69636
 }
 
 //func TestRead(t *testing.T) {
@@ -90,9 +107,15 @@ func TestGetReadings(t *testing.T){
 //}
 //}
 
+<<<<<<< HEAD
 
 //Hardware setup: A peripheral must be on CS pins specified in metricPeripheralNumberMapping.json
 //
+=======
+///*
+//Hardware setup: A peripheral must be on CS pins specified in metricPeripheralNumberMapping.json
+//*/
+>>>>>>> beddb5414abaccd00fce4616dbdb37c636e69636
 //t.Run("Read all peripherals repeatedly until a key is pressed", func(t *testing.T) {
 //setup()
 //scanner := bufio.NewScanner(os.Stdin)

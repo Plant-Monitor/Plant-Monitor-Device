@@ -7,14 +7,14 @@ import (
 	"sync"
 )
 
-type actionsStore struct {
+type ActionsStore struct {
 }
 
-var actionsStoreInstance *actionsStore
+var actionsStoreInstance *ActionsStore
 var actionsStoreLock = &sync.Mutex{}
 var storeDict = make(map[uuid.UUID]*Action)
 
-func getActionsStoreInstance() *actionsStore {
+func GetActionsStoreInstance() *ActionsStore {
 	return utils.GetSingletonInstance(
 		actionsStoreInstance,
 		actionsStoreLock,
@@ -23,35 +23,41 @@ func getActionsStoreInstance() *actionsStore {
 	)
 }
 
-func newActionsStore(initParams ...any) *actionsStore {
-	//instance := make(actionsStore)
+func newActionsStore(initParams ...any) *ActionsStore {
+	//instance := make(ActionsStore)
 	//return &instance
-	return &actionsStore{}
+	return &ActionsStore{}
 }
 
-func (store *actionsStore) add(action *Action) {
+func (store *ActionsStore) add(action *Action) {
 	actionsStoreLock.Lock()
 	defer actionsStoreLock.Unlock()
 	storeDict[action.ActionID] = action
 }
 
-func (store *actionsStore) resolve(action *Action) error {
-	delete(storeDict, action.ActionID)
+func (store *ActionsStore) resolve(id uuid.UUID) error {
+	delete(storeDict, id)
 	return nil
 }
 
-func (store *actionsStore) get(id uuid.UUID) *Action {
+func (store *ActionsStore) get(id uuid.UUID) *Action {
 	return storeDict[id]
 }
 
-func (store *actionsStore) execute() error {
-	for _, action := range storeDict {
+func (store *ActionsStore) Execute() error {
+	for id, action := range storeDict {
 		serverErr, execErr := action.execute()
 		if serverErr != nil {
 			fmt.Printf("Failed to create action on server: %s\n", serverErr)
 		}
 		if execErr != nil {
 			fmt.Printf("Failed to execute action: %s\n", execErr)
+		}
+		if execErr == nil {
+			err := store.resolve(id)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil

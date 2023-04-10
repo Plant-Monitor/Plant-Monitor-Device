@@ -52,6 +52,14 @@ func (client *ServerClient) CreateAction(action interface{}) error {
 	return err
 }
 
+func (client *ServerClient) ResolveAction(resolvedActionDto interface{}) error {
+	_, err := client.write(
+		resolvedActionDto,
+		fmt.Sprintf("%s/actions/resolve", client.hostUri),
+	)
+	return err
+}
+
 func (client *ServerClient) write(dto interface{}, endpoint string) (statusCode int, err error) {
 	snapshotJSON, _ := json.Marshal(dto)
 	requestBody := bytes.NewBuffer(snapshotJSON)

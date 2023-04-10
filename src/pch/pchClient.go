@@ -9,25 +9,25 @@ import (
 	"periph.io/x/conn/v3/gpio/gpioreg"
 	"periph.io/x/conn/v3/i2c"
 	"periph.io/x/conn/v3/i2c/i2creg"
+	"periph.io/x/conn/v3/physic"
 	"periph.io/x/conn/v3/spi"
 	"periph.io/x/conn/v3/spi/spireg"
-	"periph.io/x/conn/v3/physic"
 	"periph.io/x/host/v3"
 	"sync"
 )
 
 var (
-	i2cport i2c.BusCloser
-	spiport spi.PortCloser
-	spiDev spi.Conn
-	trigPin gpio.PinIO
-	echoPin gpio.PinIO
+	i2cport        i2c.BusCloser
+	spiport        spi.PortCloser
+	spiDev         spi.Conn
+	trigPin        gpio.PinIO
+	echoPin        gpio.PinIO
 	moistureActPin gpio.PinIO
 )
 
 type PCHClient struct {
-	sensorConfig sensorConfig
-	metricConfig metricConfig
+	sensorConfig   sensorConfig
+	metricConfig   metricConfig
 	actuatorConfig actuatorConfig
 }
 
@@ -93,15 +93,15 @@ func setupPCH() {
 	}
 	//configure the pin for moisture actuation
 	moistureActPin = gpioreg.ByName("GPIO17")
-    if moistureActPin == nil {
-        fmt.Println("Failed to find GPIO pin")
-        return
-    }
-    // Set the pin to output mode
-    if err := moistureActPin.Out(gpio.Low); err != nil {
-        fmt.Println("Failed to set pin to output mode:", err)
-        return
-    }
+	if moistureActPin == nil {
+		fmt.Println("Failed to find GPIO pin")
+		return
+	}
+	// Set the pin to output mode
+	if err := moistureActPin.Out(gpio.Low); err != nil {
+		fmt.Println("Failed to set pin to output mode:", err)
+		return
+	}
 
 }
 
@@ -126,7 +126,7 @@ func (client *PCHClient) getRawReadingsCollection() rawReadingsCollection {
 }
 
 func (client *PCHClient) PerformActuations() {
-	for _,driver := range client.actuatorConfig {
+	for _, driver := range client.actuatorConfig {
 		driver()
 	}
 }
@@ -147,16 +147,16 @@ func loadSensorConfig() sensorConfig {
 }
 func loadMetricConfig() metricConfig {
 	return metricConfig{
-		"temperature": getTemperature,
-		"humidity":    getHumidity,
-		"moisture":    getMoisture,
-		"water level": getWaterLevel,
-		"light intensity":   getLightIntensity,
+		"temperature":     getTemperature,
+		"humidity":        getHumidity,
+		"moisture":        getMoisture,
+		"water level":     getWaterLevel,
+		"light intensity": getLightIntensity,
 	}
 }
+
 func loadActuatorConfig() actuatorConfig {
 	return actuatorConfig{
-		"moisture":		pumpDriver,
-		
+		"moisture": pumpDriver,
 	}
 }

@@ -59,7 +59,7 @@ func newAction(
 		executeCallback: executionCallback,
 	}
 
-	store := getActionsStoreInstance()
+	store := GetActionsStoreInstance()
 	store.add(action)
 
 	return action.ActionID
@@ -67,8 +67,6 @@ func newAction(
 
 func (action *Action) execute() (serverErr error, execErr error) {
 	serverErr = utils.GetServerClientInstance().CreateAction(action)
-	
+
 	return serverErr, action.executeCallback()
 }
-
-	
