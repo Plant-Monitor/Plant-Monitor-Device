@@ -21,6 +21,7 @@ type app struct {
 func (app *app) setup() {
 	app.loadEnv()
 	app.setupMongoConnection()
+
 }
 
 func (app *app) loadEnv() {
@@ -30,5 +31,9 @@ func (app *app) loadEnv() {
 }
 
 func (app *app) setupMongoConnection() {
+
+}
+
+func (app *app) loadSubscribers() {
 
 }
