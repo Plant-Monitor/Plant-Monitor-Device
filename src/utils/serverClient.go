@@ -7,8 +7,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"pcs/actions"
-	"pcs/models"
 	"sync"
 )
 
@@ -39,14 +37,14 @@ func GetServerClientInstance() *ServerClient {
 	)
 }
 
-func (client *ServerClient) WriteSnapshot(snapshot *models.Snapshot) (statusCode int, err error) {
+func (client *ServerClient) WriteSnapshot(snapshot interface{}) (statusCode int, err error) {
 	return client.write(
 		snapshot,
 		fmt.Sprintf("%s/snapshots", client.hostUri),
 	)
 }
 
-func (client *ServerClient) CreateAction(action *actions.Action) error {
+func (client *ServerClient) CreateAction(action interface{}) error {
 	_, err := client.write(
 		action,
 		fmt.Sprintf("%s/actions/create", client.hostUri),
@@ -77,22 +75,3 @@ func (client *ServerClient) write(dto interface{}, endpoint string) (statusCode 
 
 	return statusCode, err
 }
-
-//func (client *ServerClient) WriteAction(dto dto.ActionDto) (statusCode int, err error) {
-//	snapshotJSON, _ := json.Marshal(dto)
-//	requestBody := bytes.NewBuffer(snapshotJSON)
-//
-//	resp, err := http.Post(
-//		string(fmt.Sprintf("%s/actions/create", client.hostUri)),
-//		"application/json",
-//		requestBody,
-//	)
-//	if err != nil {
-//		return 0, err
-//	}
-//	defer resp.Body.Close()
-//
-//	statusCode = resp.StatusCode
-//
-//	return statusCode, err
-//}

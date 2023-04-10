@@ -11,26 +11,34 @@ type Action struct {
 	ActionID        uuid.UUID        `json:"action_id"`
 	Timestamp       time.Time        `json:"timestamp"`
 	Type            actionType       `json:"action_type"`
-	Status          actionStatus     `json:"action_status"`
+	Status          actionStatus     `json:"status"`
 	Metric          models.Metric    `json:"metric"`
 	LevelNeeded     float32          `json:"level_needed"`
 	CurrentSnapshot *models.Snapshot `json:"current_snapshot"`
+	CriticalRange   criticalRange    `json:"critical_range"`
 
 	executeCallback ActionExecutionCallback
 }
 
-type actionType int8
+type actionType string
 type actionStatus int8
+type criticalRange int8
 type ActionExecutionCallback func() error
 
 const (
-	TAKEN actionType = iota
-	NEEDED
+	TAKEN  actionType = "TAKEN"
+	NEEDED            = "NEEDED"
 )
 
 const (
 	RESOLVED actionStatus = iota
 	UNRESOLVED
+)
+
+const (
+	NOT_CRITICAL criticalRange = iota
+	CRITICAL_HIGH
+	CRITICAL_LOW
 )
 
 func newAction(
@@ -41,17 +49,18 @@ func newAction(
 	executionCallback ActionExecutionCallback,
 ) (actionId uuid.UUID) {
 	action := &Action{
-		uuid.New(),
-		time.Now(),
-		actType,
-		UNRESOLVED,
-		metric,
-		levelNeeded,
-		snapshot,
-		executionCallback,
+		ActionID:        uuid.New(),
+		Timestamp:       time.Now(),
+		Type:            actType,
+		Status:          UNRESOLVED,
+		Metric:          metric,
+		LevelNeeded:     levelNeeded,
+		CurrentSnapshot: snapshot,
+		executeCallback: executionCallback,
 	}
 
-	getActionsStoreInstance().add(action)
+	store := getActionsStoreInstance()
+	store.add(action)
 
 	return action.ActionID
 }

@@ -35,6 +35,10 @@ func newThresholdMap(initParams ...any) *MetricAnalysisThresholdMap {
 	return loadThresholdMap()
 }
 
+func GetThresholdCollection(metric models.Metric) ThresholdCollection {
+	return (*GetMetricAnalysisThresholdMapInstance())[metric]
+}
+
 func loadThresholdMap() *MetricAnalysisThresholdMap {
 
 	content, err := os.ReadFile(

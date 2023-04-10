@@ -28,5 +28,11 @@
     "good_min_threshold": 10,
     "good_max_threshold": 15,
     "upper_critical_threshold": 20
+  },
+  "testMetric": {
+    "lower_critical_threshold": 5,
+    "good_min_threshold": 10,
+    "good_max_threshold": 15,
+    "upper_critical_threshold": 20
   }
 }
