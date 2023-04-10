@@ -35,8 +35,8 @@ func (store *ActionsStore) add(action *Action) {
 	storeDict[action.ActionID] = action
 }
 
-func (store *ActionsStore) resolve(action *Action) error {
-	delete(storeDict, action.ActionID)
+func (store *ActionsStore) resolve(id uuid.UUID) error {
+	delete(storeDict, id)
 	return nil
 }
 
@@ -45,13 +45,19 @@ func (store *ActionsStore) get(id uuid.UUID) *Action {
 }
 
 func (store *ActionsStore) Execute() error {
-	for _, action := range storeDict {
+	for id, action := range storeDict {
 		serverErr, execErr := action.execute()
 		if serverErr != nil {
 			fmt.Printf("Failed to create action on server: %s\n", serverErr)
 		}
 		if execErr != nil {
 			fmt.Printf("Failed to execute action: %s\n", execErr)
+		}
+		if execErr == nil {
+			err := store.resolve(id)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil

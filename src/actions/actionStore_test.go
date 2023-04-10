@@ -69,7 +69,7 @@ func TestActionsStore(t *testing.T) {
 
 		assert.Equal(t, store.get(actionId), action)
 
-		err := store.resolve(action)
+		err := store.resolve(actionId)
 		assert.Nil(t, err)
 		assert.Nil(t, store.get(actionId))
 	})
@@ -87,5 +87,6 @@ func TestActionsStore(t *testing.T) {
 		assert.NotNil(t, GetActionsStoreInstance().get(actionId))
 		err := GetActionsStoreInstance().Execute()
 		assert.Nil(t, err)
+		assert.Nil(t, GetActionsStoreInstance().get(actionId))
 	})
 }

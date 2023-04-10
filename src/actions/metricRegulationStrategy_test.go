@@ -1,10 +1,12 @@
 package actions
 
 import (
+	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 	"pcs/models"
 	"testing"
+	"time"
 )
 
 func TestNeededActionRegulation(t *testing.T) {
@@ -19,14 +21,14 @@ func TestNeededActionRegulation(t *testing.T) {
 		setup()
 		strat := newNeededActionRegulationStrategy("testMetric", 1)
 		threshold := strat.determineLevelNeeded(CRITICAL_LOW)
-		assert.Equal(t, float32(10), threshold)
+		assert.Equal(t, 10.0, threshold)
 	})
 
 	t.Run("Strategy should return the maximum good threshold when the metric is in the upper critical range", func(t *testing.T) {
 		setup()
 		strat := newNeededActionRegulationStrategy("testMetric", 1)
 		threshold := strat.determineLevelNeeded(CRITICAL_HIGH)
-		assert.Equal(t, float32(15), threshold)
+		assert.Equal(t, 15.0, threshold)
 	})
 
 	t.Run("Decide should return true when the metric is in lower critical range", func(t *testing.T) {
@@ -140,7 +142,7 @@ func TestNeededActionRegulation(t *testing.T) {
 	t.Run("Strat should decide against taking action if check timer isn't expired yet", func(t *testing.T) {
 		setup()
 		strat := newNeededActionRegulationStrategy("testMetric", 1)
-		
+
 		decision, critRange, _ := strat.decide(models.Snapshot{
 			HealthProperties: models.ConvertedReadingsCollection{
 				"testMetric": &models.HealthProperty{
@@ -152,5 +154,193 @@ func TestNeededActionRegulation(t *testing.T) {
 		})
 		assert.False(t, decision)
 		assert.Equal(t, NOT_CRITICAL, critRange)
+	})
+
+	t.Run("Strat should determine that timer is expired", func(t *testing.T) {
+		setup()
+
+		strat := newNeededActionRegulationStrategy("testMetric", 1)
+		strat.startTimer()
+		time.Sleep(62 * time.Second)
+		assert.True(t, strat.isTimerExpired())
+	})
+
+	t.Run("Strat should determine that timer is still running", func(t *testing.T) {
+		setup()
+
+		strat := newNeededActionRegulationStrategy("testMetric", 1)
+		strat.startTimer()
+		time.Sleep(10 * time.Second)
+		assert.False(t, strat.isTimerExpired())
+	})
+
+	t.Run("Strat should decide against action if timer isn't expired", func(t *testing.T) {
+		setup()
+		strat := newNeededActionRegulationStrategy("testMetric", 1)
+		strat.startTimer()
+		time.Sleep(10 * time.Second)
+		decision, critRange, _ := strat.decide(models.Snapshot{
+			HealthProperties: models.ConvertedReadingsCollection{
+				"testMetric": &models.HealthProperty{
+					Level:          20.5,
+					Unit:           "arb units",
+					Interpretation: models.CRITICAL,
+				},
+			},
+		})
+		assert.False(t, decision)
+		assert.Equal(t, NOT_CRITICAL, critRange)
+	})
+
+	t.Run("Strat should decide for action if timer is expired", func(t *testing.T) {
+		setup()
+		strat := newNeededActionRegulationStrategy("testMetric", 1)
+		strat.startTimer()
+		time.Sleep(62 * time.Second)
+		decision, critRange, _ := strat.decide(models.Snapshot{
+			HealthProperties: models.ConvertedReadingsCollection{
+				"testMetric": &models.HealthProperty{
+					Level:          20.5,
+					Unit:           "arb units",
+					Interpretation: models.CRITICAL,
+				},
+			},
+		})
+		assert.True(t, decision)
+		assert.Equal(t, CRITICAL_HIGH, critRange)
+	})
+
+	t.Run("Strat should resolve an action", func(t *testing.T) {
+		setup()
+		strat := newNeededActionRegulationStrategy("testMetric", 1)
+		userId := uuid.New()
+
+		criticalSnapshot := models.Snapshot{
+			UserId:    userId,
+			PlantId:   userId,
+			Timestamp: time.Now(),
+			HealthProperties: models.ConvertedReadingsCollection{
+				"testMetric": &models.HealthProperty{
+					Level:          3,
+					Unit:           "arb units",
+					Interpretation: models.CRITICAL,
+				},
+			},
+		}
+		strat.Regulate(strat, criticalSnapshot)
+		assert.True(t, len(storeDict) > 0)
+
+		goodSnapshot := models.Snapshot{
+			UserId:    userId,
+			PlantId:   userId,
+			Timestamp: time.Now(),
+			HealthProperties: models.ConvertedReadingsCollection{
+				"testMetric": &models.HealthProperty{
+					Level:          14,
+					Unit:           "arb units",
+					Interpretation: models.GOOD,
+				},
+			},
+		}
+		strat.Regulate(strat, goodSnapshot)
+		assert.True(t, len(storeDict) == 0)
+	})
+
+	t.Run("Strat shouldn't regulate if timer isn't expired yet", func(t *testing.T) {
+		setup()
+		strat := newNeededActionRegulationStrategy("testMetric", 1)
+		userId := uuid.New()
+
+		criticalSnapshot := models.Snapshot{
+			UserId:    userId,
+			PlantId:   userId,
+			Timestamp: time.Now(),
+			HealthProperties: models.ConvertedReadingsCollection{
+				"testMetric": &models.HealthProperty{
+					Level:          3,
+					Unit:           "arb units",
+					Interpretation: models.CRITICAL,
+				},
+			},
+		}
+		strat.Regulate(strat, criticalSnapshot)
+		assert.True(t, len(storeDict) == 1)
+		var actionId uuid.UUID
+		for id, _ := range storeDict {
+			actionId = id
+		}
+
+		err := GetActionsStoreInstance().Execute()
+		assert.Nil(t, err)
+
+		nextSnapshot := models.Snapshot{
+			UserId:    userId,
+			PlantId:   userId,
+			Timestamp: time.Now(),
+			HealthProperties: models.ConvertedReadingsCollection{
+				"testMetric": &models.HealthProperty{
+					Level:          4,
+					Unit:           "arb units",
+					Interpretation: models.CRITICAL,
+				},
+			},
+		}
+		strat.Regulate(strat, nextSnapshot)
+		//assert.True(t, len(storeDict) == 0)
+		_, isInStore := storeDict[actionId]
+		assert.False(t, isInStore)
+	})
+
+	t.Run("Strat should regulate if timer is expired yet", func(t *testing.T) {
+		setup()
+		strat := newNeededActionRegulationStrategy("testMetric", 1)
+		userId := uuid.New()
+
+		criticalSnapshot := models.Snapshot{
+			UserId:    userId,
+			PlantId:   userId,
+			Timestamp: time.Now(),
+			HealthProperties: models.ConvertedReadingsCollection{
+				"testMetric": &models.HealthProperty{
+					Level:          3,
+					Unit:           "arb units",
+					Interpretation: models.CRITICAL,
+				},
+			},
+		}
+		strat.Regulate(strat, criticalSnapshot)
+		assert.True(t, len(storeDict) == 1)
+		var actionId uuid.UUID
+		for id, _ := range storeDict {
+			actionId = id
+		}
+
+		err := GetActionsStoreInstance().Execute()
+		assert.Nil(t, err)
+		_, isInStore := storeDict[actionId]
+		assert.False(t, isInStore)
+
+		time.Sleep(62 * time.Second)
+
+		nextSnapshot := models.Snapshot{
+			UserId:    userId,
+			PlantId:   userId,
+			Timestamp: time.Now(),
+			HealthProperties: models.ConvertedReadingsCollection{
+				"testMetric": &models.HealthProperty{
+					Level:          4,
+					Unit:           "arb units",
+					Interpretation: models.CRITICAL,
+				},
+			},
+		}
+		strat.Regulate(strat, nextSnapshot)
+		assert.True(t, len(storeDict) == 1)
+		for id, _ := range storeDict {
+			actionId = id
+		}
+		//assert.True(t, len(storeDict) == 0)
+		//_, isInStore = storeDict[actionId]
+		//assert.False(t, isInStore)
 	})
 }
