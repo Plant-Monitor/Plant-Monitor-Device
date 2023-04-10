@@ -19,17 +19,17 @@ type ConvertedReadingsCollection map[Metric]*HealthProperty
 type Metric string
 
 type HealthProperty struct {
-	Level          float32        `json:"level"`
+	Level          float64        `json:"level"`
 	Unit           string         `json:"unit"`
 	Interpretation Interpretation `json:"interpretation"`
 }
 
-type Interpretation int8
+type Interpretation string
 
 const (
-	GOOD Interpretation = iota
-	OKAY
-	CRITICAL
+	GOOD Interpretation = "GOOD"
+	OKAY = "OKAY"
+	CRITICAL = "CRITICAL"
 )
 
 func BuildSnapshot(readings ConvertedReadingsCollection) *Snapshot {

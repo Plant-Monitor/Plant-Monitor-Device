@@ -1,5 +1,6 @@
 package models
 
-type PinReadingsCollection map[Pin]PinReading
-type PinReading int
-type Pin string
+type DigitalReadingsCollection map[Metric]DigitalReading
+type DigitalReading uint8 // ?: @timiagiri Are we expecting 8 bit resolution or higher
+// type Pin string
+type PeripheralNumber uint8

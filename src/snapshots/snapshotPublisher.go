@@ -1,29 +1,73 @@
 package snapshots
 
 import (
-	"pcs/gpio"
+	"pcs/analysis"
 	"pcs/models"
-	"pcs/pin_reading_conversion"
+	"pcs/pch"
 	"pcs/utils"
 	"sync"
+	"fmt"
 )
 
 var snapshotPublisherInstance *SnapshotPublisher
 var snapshotPublisherLock *sync.Mutex = &sync.Mutex{}
 
 type SnapshotPublisher struct {
-	subscribers       []SnapshotSubscriber
-	updater           SnapshotUpdater
-	currentState      *models.Snapshot
-	gpioClient        *gpio.GpioClient
-	readingsConverter *pin_reading_conversion.PinReadingsConverter
+	subscribers  []SnapshotSubscriber
+	updater      SnapshotUpdater
+	currentState *models.Snapshot
+	pchClient    *pch.PCHClient
 }
 
 func (publisher *SnapshotPublisher) Run() {
+	publisher.setup()
 	for {
 		publisher.updateState()
 		publisher.notifySubscribers()
+		fmt.Println("Snapshot has been published!")
 	}
+}
+
+func (publisher *SnapshotPublisher) setup() {
+	publisher.loadSubscribers()
+}
+
+func (publisher *SnapshotPublisher) loadSubscribers() {
+	tempSub := MetricSubscriber{
+		updateStrategy: MetricSubscriberUpdateStrategy{
+			analysisStrategy: analysis.NewThresholdAnalysisStrategy("temperature"),
+		},
+	}
+
+	moistureSub := MetricSubscriber{
+		updateStrategy: MetricSubscriberUpdateStrategy{
+			analysisStrategy: analysis.NewThresholdAnalysisStrategy("moisture"),
+		},
+	}
+
+	lightSub := MetricSubscriber{
+		updateStrategy: MetricSubscriberUpdateStrategy{
+			analysisStrategy: analysis.NewThresholdAnalysisStrategy("light intensity"),
+		},
+	}
+
+	tankLevelSub := MetricSubscriber{
+		updateStrategy: MetricSubscriberUpdateStrategy{
+			analysisStrategy: analysis.NewThresholdAnalysisStrategy("water level"),
+		},
+	}
+
+	humiditySub := MetricSubscriber{
+		updateStrategy: MetricSubscriberUpdateStrategy{
+			analysisStrategy: analysis.NewThresholdAnalysisStrategy("humidity"),
+		},
+	}
+
+	publisher.Subscribe(&tempSub)
+	publisher.Subscribe(&moistureSub)
+	publisher.Subscribe(&lightSub)
+	publisher.Subscribe(&tankLevelSub)
+	publisher.Subscribe(&humiditySub)
 }
 
 func GetSnapshotPublisherInstance() *SnapshotPublisher {
@@ -37,10 +81,9 @@ func GetSnapshotPublisherInstance() *SnapshotPublisher {
 
 func newSnapshotPublisher(initParams ...any) *SnapshotPublisher {
 	return &SnapshotPublisher{
-		subscribers:       make([]SnapshotSubscriber, 0),
-		updater:           *GetSnapshotUpdaterInstance(),
-		gpioClient:        gpio.GetGpioClientInstance(),
-		readingsConverter: pin_reading_conversion.GetPinReadingsConverterInstance(),
+		subscribers: make([]SnapshotSubscriber, 0),
+		updater:     *GetSnapshotUpdaterInstance(),
+		pchClient:   pch.GetPCHClientInstance(),
 	}
 }
 
@@ -51,6 +94,7 @@ func (publisher *SnapshotPublisher) Subscribe(sub SnapshotSubscriber) {
 
 // Notify the subscribers of the most current Snapshot stored in the publisher
 func (publisher *SnapshotPublisher) notifySubscribers() {
+	fmt.Println("[SnapshotPublisher] Notifying subscribers")
 	for _, sub := range publisher.subscribers {
 		sub.update(publisher.currentState)
 	}
@@ -59,12 +103,15 @@ func (publisher *SnapshotPublisher) notifySubscribers() {
 
 // Update the state of the SnapshotPublisher by reading the GPIO pins
 func (publisher *SnapshotPublisher) updateState() {
-	pinReads := publisher.gpioClient.Read()
-	convertedReads := publisher.readingsConverter.Convert(pinReads)
+	fmt.Println("[SnapshotPublisher] Updating current snapshot")
+	convertedReads := publisher.pchClient.GetReadings()
 	publisher.currentState = publisher.buildSnapshot(convertedReads)
+	
+	fmt.Printf("[SnapshotPublisher] Built snapshot %+v\n", publisher.currentState)
 }
 
 // Build snapshot from the provided readings collection
 func (publisher *SnapshotPublisher) buildSnapshot(readings models.ConvertedReadingsCollection) *models.Snapshot {
+	fmt.Println("[SnapshotPublisher] Building snapshot")
 	return models.BuildSnapshot(readings)
 }

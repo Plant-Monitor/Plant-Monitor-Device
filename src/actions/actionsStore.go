@@ -1,76 +1,58 @@
 package actions
 
 import (
+	"fmt"
+	"github.com/google/uuid"
 	"pcs/utils"
 	"sync"
 )
 
-/* actionsStore ABSTRACT CLASS */
-
-type iActionsStore interface {
-	add(action action)
-}
-
 type actionsStore struct {
-	actionsQueue []action
 }
 
-func (store *actionsStore) add(action action) {
-	store.actionsQueue = append(store.actionsQueue, action)
-}
+var actionsStoreInstance *actionsStore
+var actionsStoreLock = &sync.Mutex{}
+var storeDict = make(map[uuid.UUID]*Action)
 
-/* automatedActionsStore CLASS */
-
-type automatedActionsStore struct{ actionsStore }
-
-var automatedActionsStoreInstance *automatedActionsStore
-var automatedActionsStoreLock *sync.Mutex = &sync.Mutex{}
-
-func getAutomatedActionsStoreInstance() *automatedActionsStore {
+func getActionsStoreInstance() *actionsStore {
 	return utils.GetSingletonInstance(
-		automatedActionsStoreInstance,
-		automatedActionsStoreLock,
-		newAutomatedActionsStore,
+		actionsStoreInstance,
+		actionsStoreLock,
+		newActionsStore,
 		nil,
 	)
 }
 
-func newAutomatedActionsStore(initParams ...any) *automatedActionsStore {
-	return &automatedActionsStore{
-		actionsStore: actionsStore{
-			actionsQueue: make([]action, 0),
-		},
+func newActionsStore(initParams ...any) *actionsStore {
+	//instance := make(actionsStore)
+	//return &instance
+	return &actionsStore{}
+}
+
+func (store *actionsStore) add(action *Action) {
+	actionsStoreLock.Lock()
+	defer actionsStoreLock.Unlock()
+	storeDict[action.ActionID] = action
+}
+
+func (store *actionsStore) resolve(action *Action) error {
+	delete(storeDict, action.ActionID)
+	return nil
+}
+
+func (store *actionsStore) get(id uuid.UUID) *Action {
+	return storeDict[id]
+}
+
+func (store *actionsStore) execute() error {
+	for _, action := range storeDict {
+		serverErr, execErr := action.execute()
+		if serverErr != nil {
+			fmt.Printf("Failed to create action on server: %s\n", serverErr)
+		}
+		if execErr != nil {
+			fmt.Printf("Failed to execute action: %s\n", execErr)
+		}
 	}
-}
-
-func (store *automatedActionsStore) add(action automatedAction) {
-	store.actionsStore.add(action)
-}
-
-/* userActionsStore CLASS */
-
-type userActionsStore struct{ actionsStore }
-
-var userActionsStoreInstance *userActionsStore
-var userActionsStoreLock *sync.Mutex = &sync.Mutex{}
-
-func getuserActionsStoreInstance() *userActionsStore {
-	return utils.GetSingletonInstance(
-		userActionsStoreInstance,
-		userActionsStoreLock,
-		newUserActionsStore,
-		nil,
-	)
-}
-
-func newUserActionsStore(initParams ...any) *userActionsStore {
-	return &userActionsStore{
-		actionsStore: actionsStore{
-			actionsQueue: make([]action, 0),
-		},
-	}
-}
-
-func (store *userActionsStore) add(action userAction) {
-	store.actionsStore.add(action)
+	return nil
 }

@@ -5,10 +5,11 @@ import (
 	"pcs/models"
 	"pcs/utils"
 	"sync"
+	"fmt"
 )
 
 type SnapshotSubscriber interface {
-	update(*models.Snapshot)
+	update(snapshot *models.Snapshot)
 }
 
 // Implements SnapshotSubscriber. Role is to update DB after a configured timelapse
@@ -31,6 +32,7 @@ func GetSnapshotUpdaterInstance() *SnapshotUpdater {
 }
 
 func newSnapshotUpdater(initParams ...any) *SnapshotUpdater {
+	fmt.Printf("[snapshots] Setting update interval to %s\n", initParams[0].(string))
 	updateStrategy := NewPeriodicUpdateStrategy(initParams[0].(string))
 	return &SnapshotUpdater{updateStrategy: updateStrategy}
 }
@@ -41,4 +43,12 @@ func (snapshotUpdater *SnapshotUpdater) update(snapshot *models.Snapshot) {
 
 type MetricSubscriber struct {
 	updateStrategy MetricSubscriberUpdateStrategy
+}
+
+func newMetricSubscriber(metric models.Metric) *MetricSubscriber {
+	return &MetricSubscriber{}
+}
+
+func (sub *MetricSubscriber) update(snapshot *models.Snapshot) {
+	sub.updateStrategy.update(snapshot)
 }
