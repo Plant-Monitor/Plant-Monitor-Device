@@ -59,7 +59,7 @@ func newAction(
 		executeCallback: executionCallback,
 	}
 
-	store := getActionsStoreInstance()
+	store := GetActionsStoreInstance()
 	store.add(action)
 
 	return action.ActionID

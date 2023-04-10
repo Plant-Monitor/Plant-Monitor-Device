@@ -20,8 +20,8 @@ func TestActionsStore(t *testing.T) {
 
 	t.Run("Test that actions store is a singleton", func(t *testing.T) {
 		setup()
-		store1 := getActionsStoreInstance()
-		store2 := getActionsStoreInstance()
+		store1 := GetActionsStoreInstance()
+		store2 := GetActionsStoreInstance()
 		assert.Equal(t, store1, store2)
 
 		actionId := uuid.New()
@@ -32,9 +32,9 @@ func TestActionsStore(t *testing.T) {
 		assert.Equal(t, store1.get(actionId), act)
 	})
 
-	t.Run("Test adding to actionsStore", func(t *testing.T) {
+	t.Run("Test adding to ActionsStore", func(t *testing.T) {
 		setup()
-		store := getActionsStoreInstance()
+		store := GetActionsStoreInstance()
 		actionId := uuid.New()
 		action := &Action{
 			ActionID:        actionId,
@@ -53,7 +53,7 @@ func TestActionsStore(t *testing.T) {
 
 	t.Run("Test resolving an action in the store", func(t *testing.T) {
 		setup()
-		store := getActionsStoreInstance()
+		store := GetActionsStoreInstance()
 		actionId := uuid.New()
 		action := &Action{
 			ActionID:        actionId,
@@ -84,8 +84,8 @@ func TestActionsStore(t *testing.T) {
 			func() error { return nil },
 		)
 		fmt.Printf("Generated actionId: %s\n", actionId)
-		assert.NotNil(t, getActionsStoreInstance().get(actionId))
-		err := getActionsStoreInstance().execute()
+		assert.NotNil(t, GetActionsStoreInstance().get(actionId))
+		err := GetActionsStoreInstance().Execute()
 		assert.Nil(t, err)
 	})
 }
