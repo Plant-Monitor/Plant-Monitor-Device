@@ -53,7 +53,7 @@ func (strat *metricRegulationStrategy) Regulate(i IMetricRegulationStrategy, sna
 
 func (strat *metricRegulationStrategy) determineResolution(snapshot models.Snapshot) bool {
 	interpretation := snapshot.HealthProperties[strat.metric].Interpretation
-	if strat.activeActionId != uuid.Nil && interpretation == models.GOOD {
+	if strat.activeActionId != uuid.Nil && interpretation == models.OKAY {
 		strat.resolveActiveAction(snapshot)
 		return true
 	}
