@@ -120,6 +120,9 @@ func (strat *neededActionRegulationStrategy) decide(snapshot models.Snapshot) (
 
 }
 
+
+	
+
 func (strat *metricRegulationStrategy) isTimerExpired() bool {
 	if strat.checkTimer == nil {
 		return true
@@ -210,4 +213,17 @@ func makeNeededActionCallback(strat *metricRegulationStrategy) ActionExecutionCa
 		strat.pendingAction = false
 		return nil
 	}
+}
+
+func (strat *moistureRegulationStrategy) decide(snapshot models.Snapshot) (
+	decision bool,
+	critRange criticalRange,
+	actType actionType,
+) {
+	healthProp := snapshot.HealthProperties[strat.metric]
+	if strat.isTimerExpired() && !strat.pendingAction {
+		return strat.determineDecision(healthProp)
+	}
+	return false, NOT_CRITICAL, NEEDED
+
 }

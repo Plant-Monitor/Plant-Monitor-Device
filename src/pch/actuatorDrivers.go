@@ -10,14 +10,14 @@ type actuatorDriver func()
 
 const (
 	timeOn 	= 2 * time.Second
-	timeOff = 4 * time.Second
+	timeOff = 2 * time.Second
 )
 
 func pumpDriver(){
 	moistureActPin.Out(gpio.High)
 	time.Sleep(timeOn)
 	moistureActPin.Out(gpio.Low)
-	time.Sleep(4 * time.Second)
+	time.Sleep(timeOff)
 	//fmt.Printf("*** MOISTURE WAS REGULATED ***\n")
 }
 
