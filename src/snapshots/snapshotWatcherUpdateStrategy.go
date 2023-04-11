@@ -31,7 +31,7 @@ func NewPeriodicUpdateStrategy(updateInterval string) *PeriodicUpdateStrategy {
 
 func (perUpdateStrategy *PeriodicUpdateStrategy) update(snapshot *models.Snapshot) (didUpdate bool) {
 	if perUpdateStrategy.lastUpdate == nil || snapshot.Timestamp.Sub(*perUpdateStrategy.lastUpdate) >= perUpdateStrategy.updateInterval {
-		fmt.Println("[snapshots] Writing to server\n\n\n\n\n\n\n\n\n\n\n\n\n")
+		fmt.Println("[snapshots] Writing to server\n\n\n\n\n")
 		_, err := perUpdateStrategy.serverClient.WriteSnapshot(snapshot)
 		if err != nil {
 			return false

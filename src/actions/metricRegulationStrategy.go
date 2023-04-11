@@ -46,6 +46,7 @@ func (strat *metricRegulationStrategy) Regulate(i IMetricRegulationStrategy, sna
 			&snapshot,
 			i.determineCallback(snapshot, critRange),
 		)
+		fmt.Printf("[Metric Regulation] New action has been initialized.\n")
 		strat.pendingAction = true
 	}
 }
@@ -93,7 +94,7 @@ type neededActionRegulationStrategy struct {
 	metricRegulationStrategy
 }
 
-func newNeededActionRegulationStrategy(metric models.Metric, checkInterval time.Duration) *neededActionRegulationStrategy {
+func NewNeededActionRegulationStrategy(metric models.Metric, checkInterval time.Duration) *neededActionRegulationStrategy {
 	return &neededActionRegulationStrategy{
 		metricRegulationStrategy: metricRegulationStrategy{
 			metric:         metric,
@@ -151,6 +152,7 @@ func (strat *neededActionRegulationStrategy) determineDecision(healthProp *model
 
 func (strat *neededActionRegulationStrategy) determineCallback(snapshot models.Snapshot, critRange criticalRange) ActionExecutionCallback {
 	return func() error {
+		fmt.Printf("[Metric Regulation] Action execution for %s has been called.\n", strat.metric)
 		strat.startTimer()
 		strat.pendingAction = false
 		return nil
