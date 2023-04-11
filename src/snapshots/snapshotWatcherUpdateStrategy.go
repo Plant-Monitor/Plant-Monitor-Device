@@ -1,12 +1,12 @@
 package snapshots
 
 import (
+	"fmt"
 	"pcs/actions"
 	"pcs/analysis"
 	"pcs/models"
 	"pcs/utils"
 	"time"
-	"fmt"
 )
 
 type SnapshotWatcherUpdateStrategy interface {
@@ -31,7 +31,7 @@ func NewPeriodicUpdateStrategy(updateInterval string) *PeriodicUpdateStrategy {
 
 func (perUpdateStrategy *PeriodicUpdateStrategy) update(snapshot *models.Snapshot) (didUpdate bool) {
 	if perUpdateStrategy.lastUpdate == nil || snapshot.Timestamp.Sub(*perUpdateStrategy.lastUpdate) >= perUpdateStrategy.updateInterval {
-		fmt.Println("[snapshots] Writing to server\n\n\n\n\n\n\n\n\n\n\n\n\n")
+		fmt.Println("[snapshots] Writing to server\n\n\n\n\n")
 		_, err := perUpdateStrategy.serverClient.WriteSnapshot(snapshot)
 		if err != nil {
 			return false
@@ -58,7 +58,7 @@ func newMetricSubscriberUpdateStrategy(
 
 func (strat *MetricSubscriberUpdateStrategy) update(snapshot *models.Snapshot) bool {
 	strat.analysisStrategy.Interpret(strat.analysisStrategy, *snapshot)
-	//strat.regulationStrategy.Regulate(*snapshot)
+	strat.regulationStrategy.Regulate(strat.regulationStrategy, *snapshot)
 
 	return false
 }

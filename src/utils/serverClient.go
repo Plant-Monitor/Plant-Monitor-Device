@@ -53,11 +53,40 @@ func (client *ServerClient) CreateAction(action interface{}) error {
 }
 
 func (client *ServerClient) ResolveAction(resolvedActionDto interface{}) error {
-	_, err := client.write(
+	_, err := client.update(
 		resolvedActionDto,
 		fmt.Sprintf("%s/actions/resolve", client.hostUri),
 	)
 	return err
+}
+
+func (client *ServerClient) update(dto interface{}, endpoint string) (statusCode int, err error) {
+	snapshotJSON, _ := json.Marshal(dto)
+	requestBody := bytes.NewBuffer(snapshotJSON)
+
+	req, err := http.NewRequest(
+		"PUT",
+		endpoint,
+		requestBody,
+	)
+	if err != nil {
+		return 0, err
+	}
+	req.Header.Set("Content-Type", "application/json")
+	if err != nil {
+		return 0, err
+	}
+	resp, err := http.DefaultClient.Do(req)
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(resp.Body)
+
+	statusCode = resp.StatusCode
+
+	return statusCode, err
 }
 
 func (client *ServerClient) write(dto interface{}, endpoint string) (statusCode int, err error) {

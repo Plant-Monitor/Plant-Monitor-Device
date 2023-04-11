@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	config "pcs/config/metric"
 	"pcs/models"
@@ -46,13 +47,14 @@ func (strat *metricRegulationStrategy) Regulate(i IMetricRegulationStrategy, sna
 			&snapshot,
 			i.determineCallback(snapshot, critRange, actType),
 		)
+		fmt.Printf("[Metric Regulation] New action has been initialized.\n")
 		strat.pendingAction = true
 	}
 }
 
 func (strat *metricRegulationStrategy) determineResolution(snapshot models.Snapshot) bool {
 	interpretation := snapshot.HealthProperties[strat.metric].Interpretation
-	if strat.activeActionId != uuid.Nil && interpretation == models.GOOD {
+	if strat.activeActionId != uuid.Nil && interpretation == models.OKAY {
 		strat.resolveActiveAction(snapshot)
 		return true
 	}
@@ -60,6 +62,7 @@ func (strat *metricRegulationStrategy) determineResolution(snapshot models.Snaps
 }
 
 func (strat *metricRegulationStrategy) resolveActiveAction(snapshot models.Snapshot) {
+	fmt.Printf("[Metric Regulation] Resolving %s\n", strat.metric)
 	err := utils.GetServerClientInstance().ResolveAction(
 		dto.CreateResolveActionDto(
 			strat.activeActionId,
@@ -67,7 +70,7 @@ func (strat *metricRegulationStrategy) resolveActiveAction(snapshot models.Snaps
 		),
 	)
 	if err != nil {
-		return
+		fmt.Printf("[Metric Regulation] Error writing to server %s\n", err)
 	}
 	strat.resetRegulation()
 }
@@ -202,6 +205,7 @@ func (strat *moistureRegulationStrategy) determineCallback(snapshot models.Snaps
 
 func makeNeededActionCallback(strat *metricRegulationStrategy) ActionExecutionCallback {
 	return func() error {
+		fmt.Printf("[Metric Regulation] Action execution for %s has been called.\n", strat.metric)
 		strat.startTimer()
 		strat.pendingAction = false
 		return nil

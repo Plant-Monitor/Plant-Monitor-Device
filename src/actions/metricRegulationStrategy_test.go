@@ -4,6 +4,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
+	"os"
 	"pcs/models"
 	"testing"
 	"time"
@@ -212,7 +213,7 @@ func TestNeededActionRegulation(t *testing.T) {
 	t.Run("Strat should resolve an action", func(t *testing.T) {
 		setup()
 		strat := newNeededActionRegulationStrategy("testMetric", 1)
-		userId := uuid.New()
+		userId, _ := uuid.Parse(os.Getenv("USER_ID"))
 
 		criticalSnapshot := models.Snapshot{
 			UserId:    userId,
@@ -228,6 +229,16 @@ func TestNeededActionRegulation(t *testing.T) {
 		}
 		strat.Regulate(strat, criticalSnapshot)
 		assert.True(t, len(storeDict) > 0)
+		assert.NotEqual(t, strat.activeActionId, uuid.Nil)
+
+		var originalId uuid.UUID
+		for id, _ := range storeDict {
+			originalId = id
+		}
+
+		assert.Equal(t, originalId, strat.activeActionId)
+
+		GetActionsStoreInstance().Execute()
 
 		goodSnapshot := models.Snapshot{
 			UserId:    userId,
@@ -243,6 +254,7 @@ func TestNeededActionRegulation(t *testing.T) {
 		}
 		strat.Regulate(strat, goodSnapshot)
 		assert.True(t, len(storeDict) == 0)
+		assert.Equal(t, strat.activeActionId, uuid.Nil)
 	})
 
 	t.Run("Strat shouldn't regulate if timer isn't expired yet", func(t *testing.T) {
@@ -271,6 +283,7 @@ func TestNeededActionRegulation(t *testing.T) {
 
 		err := GetActionsStoreInstance().Execute()
 		assert.Nil(t, err)
+		assert.True(t, len(storeDict) == 0)
 
 		nextSnapshot := models.Snapshot{
 			UserId:    userId,
@@ -285,7 +298,8 @@ func TestNeededActionRegulation(t *testing.T) {
 			},
 		}
 		strat.Regulate(strat, nextSnapshot)
-		//assert.True(t, len(storeDict) == 0)
+		assert.True(t, len(storeDict) == 0)
+
 		_, isInStore := storeDict[actionId]
 		assert.False(t, isInStore)
 	})
@@ -335,9 +349,8 @@ func TestNeededActionRegulation(t *testing.T) {
 		}
 		strat.Regulate(strat, nextSnapshot)
 		assert.True(t, len(storeDict) == 1)
-		for id, _ := range storeDict {
-			actionId = id
-		}
+
+		assert.NotNil(t, strat.activeActionId)
 		//assert.True(t, len(storeDict) == 0)
 		//_, isInStore = storeDict[actionId]
 		//assert.False(t, isInStore)
