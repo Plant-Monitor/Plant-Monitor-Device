@@ -3,7 +3,7 @@ package analysis
 import (
 	config "pcs/config/metric"
 	"pcs/models"
-	"fmt"
+	//"fmt"
 )
 
 type IMetricAnalysisStrategy interface {
@@ -16,7 +16,7 @@ type metricAnalysisStrategy struct {
 }
 
 func (strat *metricAnalysisStrategy) Interpret(i IMetricAnalysisStrategy, snapshot models.Snapshot) models.Interpretation {
-	fmt.Printf("[Analysis] Interpreting %s\n", strat.metric)
+	//fmt.Printf("[Analysis] Interpreting %s\n", strat.metric)
 	healthProp := snapshot.HealthProperties[strat.metric]
 	interpretation := i.analyze(healthProp.Level)
 	healthProp.Interpretation = interpretation

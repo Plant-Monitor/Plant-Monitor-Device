@@ -21,7 +21,7 @@ type Action struct {
 }
 
 type actionType string
-type actionStatus int8
+type actionStatus string
 type criticalRange int8
 type ActionExecutionCallback func() error
 
@@ -31,8 +31,8 @@ const (
 )
 
 const (
-	RESOLVED actionStatus = iota
-	UNRESOLVED
+	RESOLVED   actionStatus = "RESOLVED"
+	UNRESOLVED              = "UNRESOLVED"
 )
 
 const (
