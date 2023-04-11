@@ -65,6 +65,7 @@ func getWaterLevel(collection rawReadingsCollection) *models.HealthProperty {
 	duration := time.Duration(durationInt)
 	distance := float64(duration.Seconds() * 340.0 / 2.0 )// speed of sound is 340 m/s
 	distance = distance * 100
+	//distance = 10 - distance
 	return &models.HealthProperty{
 		Level: distance,
 		Unit:  "cm",

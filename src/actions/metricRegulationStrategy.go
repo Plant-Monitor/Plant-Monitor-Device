@@ -7,6 +7,7 @@ import (
 	"pcs/models/dto"
 	"pcs/utils"
 	"time"
+	"fmt"
 )
 
 type IMetricRegulationStrategy interface {
@@ -26,6 +27,7 @@ type metricRegulationStrategy struct {
 	metric         models.Metric
 	checkInterval  time.Duration // expressed in hours
 	checkTimer     *time.Timer
+	//cooldown	   *time.Timer
 	activeActionId uuid.UUID
 	pendingAction  bool
 }
@@ -46,12 +48,13 @@ func (strat *metricRegulationStrategy) Regulate(i IMetricRegulationStrategy, sna
 			i.determineCallback(snapshot, critRange),
 		)
 		strat.pendingAction = true
+		fmt.Printf("[Actions] New action has been initialized\n")
 	}
 }
 
 func (strat *metricRegulationStrategy) determineResolution(snapshot models.Snapshot) bool {
 	interpretation := snapshot.HealthProperties[strat.metric].Interpretation
-	if strat.activeActionId != uuid.Nil && interpretation == models.GOOD {
+	if (strat.activeActionId != uuid.Nil) && (interpretation == models.GOOD) {
 		strat.resolveActiveAction(snapshot)
 		return true
 	}
@@ -59,6 +62,7 @@ func (strat *metricRegulationStrategy) determineResolution(snapshot models.Snaps
 }
 
 func (strat *metricRegulationStrategy) resolveActiveAction(snapshot models.Snapshot) {
+	fmt.Printf("[Actions] Resolving %s\n", strat.metric)
 	err := utils.GetServerClientInstance().ResolveAction(
 		dto.CreateResolveActionDto(
 			strat.activeActionId,
@@ -74,6 +78,7 @@ func (strat *metricRegulationStrategy) resolveActiveAction(snapshot models.Snaps
 func (strat *metricRegulationStrategy) resetRegulation() {
 	strat.activeActionId = uuid.Nil
 	strat.checkTimer = nil
+	
 }
 
 func (strat *metricRegulationStrategy) determineLevelNeeded(critRange criticalRange) float64 {
@@ -91,12 +96,13 @@ type neededActionRegulationStrategy struct {
 	metricRegulationStrategy
 }
 
-func newNeededActionRegulationStrategy(metric models.Metric, checkInterval time.Duration) *neededActionRegulationStrategy {
+func NewNeededActionRegulationStrategy(metric models.Metric, checkInterval time.Duration) *neededActionRegulationStrategy {
 	return &neededActionRegulationStrategy{
 		metricRegulationStrategy: metricRegulationStrategy{
 			metric:         metric,
 			checkInterval:  checkInterval,
 			checkTimer:     nil,
+			//cooldown:		nil,
 			activeActionId: uuid.Nil,
 			pendingAction:  false,
 		},
@@ -130,6 +136,7 @@ func (strat *metricRegulationStrategy) isTimerExpired() bool {
 
 func (strat *metricRegulationStrategy) startTimer() {
 	strat.checkTimer = time.NewTimer(time.Minute * strat.checkInterval)
+	//strat.cooldown = time.NewTimer(time.Second * 30)
 }
 
 func (strat *neededActionRegulationStrategy) determineDecision(healthProp *models.HealthProperty) (
@@ -149,6 +156,7 @@ func (strat *neededActionRegulationStrategy) determineDecision(healthProp *model
 
 func (strat *neededActionRegulationStrategy) determineCallback(snapshot models.Snapshot, critRange criticalRange) ActionExecutionCallback {
 	return func() error {
+		fmt.Printf("[Actions] Action execution for %s has been called!\n",strat.metric)
 		strat.startTimer()
 		strat.pendingAction = false
 		return nil
