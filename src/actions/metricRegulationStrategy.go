@@ -1,6 +1,7 @@
 package actions
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	config "pcs/config/metric"
 	"pcs/models"
@@ -59,6 +60,7 @@ func (strat *metricRegulationStrategy) determineResolution(snapshot models.Snaps
 }
 
 func (strat *metricRegulationStrategy) resolveActiveAction(snapshot models.Snapshot) {
+	fmt.Printf("[Metric Regulation] Resolving %s\n", strat.metric)
 	err := utils.GetServerClientInstance().ResolveAction(
 		dto.CreateResolveActionDto(
 			strat.activeActionId,
@@ -66,7 +68,7 @@ func (strat *metricRegulationStrategy) resolveActiveAction(snapshot models.Snaps
 		),
 	)
 	if err != nil {
-		return
+		fmt.Printf("[Metric Regulation] Error writing to server %s\n", err)
 	}
 	strat.resetRegulation()
 }
