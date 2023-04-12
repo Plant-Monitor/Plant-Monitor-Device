@@ -18,10 +18,10 @@
     "upper_critical_threshold": 80.0
   },
   "water level": {
-    "lower_critical_threshold": 5,
-    "good_min_threshold": 10,
-    "good_max_threshold": 15,
-    "upper_critical_threshold": 20
+    "lower_critical_threshold": 3,
+    "good_min_threshold": 9,
+    "good_max_threshold": 13,
+    "upper_critical_threshold": 17
   },
   "light intensity": {
     "lower_critical_threshold": 270,
