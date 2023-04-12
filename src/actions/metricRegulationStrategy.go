@@ -6,6 +6,7 @@ import (
 	config "pcs/config/metric"
 	"pcs/models"
 	"pcs/models/dto"
+	"pcs/pch"
 	"pcs/utils"
 	"time"
 )
@@ -17,7 +18,7 @@ type IMetricRegulationStrategy interface {
 		actType actionType,
 	)
 	Regulate(i IMetricRegulationStrategy, snapshot models.Snapshot)
-	determineCallback(snapshot models.Snapshot, critRange criticalRange) ActionExecutionCallback
+	determineCallback(snapshot models.Snapshot, critRange criticalRange, actType actionType) ActionExecutionCallback
 	determineResolution(snapshot models.Snapshot) bool
 	isTimerExpired() bool
 }
@@ -44,7 +45,7 @@ func (strat *metricRegulationStrategy) Regulate(i IMetricRegulationStrategy, sna
 			levelNeeded,
 			strat.metric,
 			&snapshot,
-			i.determineCallback(snapshot, critRange),
+			i.determineCallback(snapshot, critRange, actType),
 		)
 		fmt.Printf("[Metric Regulation] New action has been initialized.\n")
 		strat.pendingAction = true
@@ -53,7 +54,7 @@ func (strat *metricRegulationStrategy) Regulate(i IMetricRegulationStrategy, sna
 
 func (strat *metricRegulationStrategy) determineResolution(snapshot models.Snapshot) bool {
 	interpretation := snapshot.HealthProperties[strat.metric].Interpretation
-	if strat.activeActionId != uuid.Nil && interpretation == models.GOOD {
+	if strat.activeActionId != uuid.Nil && interpretation == models.OKAY {
 		strat.resolveActiveAction(snapshot)
 		return true
 	}
@@ -119,6 +120,9 @@ func (strat *neededActionRegulationStrategy) decide(snapshot models.Snapshot) (
 
 }
 
+
+	
+
 func (strat *metricRegulationStrategy) isTimerExpired() bool {
 	if strat.checkTimer == nil {
 		return true
@@ -150,11 +154,76 @@ func (strat *neededActionRegulationStrategy) determineDecision(healthProp *model
 	return false, NOT_CRITICAL, NEEDED
 }
 
-func (strat *neededActionRegulationStrategy) determineCallback(snapshot models.Snapshot, critRange criticalRange) ActionExecutionCallback {
+func (strat *neededActionRegulationStrategy) determineCallback(snapshot models.Snapshot, critRange criticalRange, actType actionType) ActionExecutionCallback {
+	return makeNeededActionCallback(&strat.metricRegulationStrategy)
+}
+
+type moistureRegulationStrategy struct {
+	metricRegulationStrategy
+}
+
+func NewMoistureRegulationStrategy(checkInterval time.Duration) *moistureRegulationStrategy {
+	return &moistureRegulationStrategy{
+		metricRegulationStrategy: metricRegulationStrategy{
+			metric:         "moisture",
+			checkInterval:  checkInterval,
+			checkTimer:     nil,
+			activeActionId: uuid.Nil,
+			pendingAction:  false,
+		},
+	}
+}
+
+func (strat *moistureRegulationStrategy) determineDecision(healthProp *models.HealthProperty) (
+	decision bool,
+	critRange criticalRange,
+	actType actionType,
+) {
+	if healthProp.Interpretation == models.CRITICAL {
+		if healthProp.Level <= config.GetThresholdCollection(strat.metric).LowerCriticalThreshold {
+			return true, CRITICAL_LOW, TAKEN
+		}
+		return true, CRITICAL_HIGH, NEEDED
+	}
+
+	return false, NOT_CRITICAL, NEEDED
+}
+
+func (strat *moistureRegulationStrategy) determineCallback(snapshot models.Snapshot, critRange criticalRange, actType actionType) ActionExecutionCallback {
+	switch actType {
+	case NEEDED:
+		return makeNeededActionCallback(&strat.metricRegulationStrategy)
+	case TAKEN:
+		return func() error {
+			err := makeNeededActionCallback(&strat.metricRegulationStrategy)()
+			if err != nil {
+				return err
+			}
+			pch.GetPCHClientInstance().Actuate(strat.metricRegulationStrategy.metric)
+			return nil
+		}
+	}
+	return nil
+}
+
+func makeNeededActionCallback(strat *metricRegulationStrategy) ActionExecutionCallback {
 	return func() error {
 		fmt.Printf("[Metric Regulation] Action execution for %s has been called.\n", strat.metric)
 		strat.startTimer()
 		strat.pendingAction = false
 		return nil
 	}
+}
+
+func (strat *moistureRegulationStrategy) decide(snapshot models.Snapshot) (
+	decision bool,
+	critRange criticalRange,
+	actType actionType,
+) {
+	healthProp := snapshot.HealthProperties[strat.metric]
+	if strat.isTimerExpired() && !strat.pendingAction {
+		return strat.determineDecision(healthProp)
+	}
+	return false, NOT_CRITICAL, NEEDED
+
 }

@@ -143,7 +143,6 @@ func TestNeededActionRegulation(t *testing.T) {
 	t.Run("Strat should decide against taking action if check timer isn't expired yet", func(t *testing.T) {
 		setup()
 		strat := newNeededActionRegulationStrategy("testMetric", 1)
-
 		decision, critRange, _ := strat.decide(models.Snapshot{
 			HealthProperties: models.ConvertedReadingsCollection{
 				"testMetric": &models.HealthProperty{

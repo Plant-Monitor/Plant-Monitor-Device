@@ -49,7 +49,7 @@ func (publisher *SnapshotPublisher) loadSubscribers() {
 	moistureSub := MetricSubscriber{
 		updateStrategy: MetricSubscriberUpdateStrategy{
 			analysisStrategy: analysis.NewThresholdAnalysisStrategy("moisture"),
-			regulationStrategy: actions.NewNeededActionRegulationStrategy("moisture", 1),
+			regulationStrategy: actions.NewMoistureRegulationStrategy(1),
 		},
 	}
 
